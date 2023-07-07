@@ -1,31 +1,20 @@
-from flask import Flask, request
-from html import escape as html_escape
+from flask import Flask
+
+from player.route import handle_home, handle_login, handle_logout
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <title>Venmo Login</title>
-    </head>
-    <body>
-    <form action="/login" method="post">
-        <label for="venmo-username">Venmo Username:</label>
-        <input type="text" id="venmo-username" name="venmo-username" required>
-        <br>
-        <input type="submit" value="Submit">
-    </form>
-    </body>
-    </html>
-    """
+    return handle_home()
 
 @app.post('/login')
 def login():
-    venmo_username = request.form.get('venmo-username')
-    return f'TODO: Create or get player with venmo username = {html_escape(venmo_username)}'
+    return handle_login()
+
+@app.post('/logout')
+def logout():
+    return handle_logout()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8080)
