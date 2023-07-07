@@ -5,6 +5,7 @@ from html import escape as html_escape
 
 from player.player import Player
 from . import repository as player_repository
+from .venmo_utils import is_valid_venmo_username
 
 VENMO_USERNAME_COOKIE = 'venmo_username'
 
@@ -47,16 +48,19 @@ def handle_home() -> str:
 
 def handle_login() -> Response:
     venmo_username = request.form.get('venmo-username')
-    response = make_response(redirect('/'))
 
     player = player_repository.fetch(venmo_username)
 
-    if not player:
+    if not player and is_valid_venmo_username(venmo_username):
         player = player_repository.create(
             venmo_username=venmo_username
         )
 
-    response.set_cookie(VENMO_USERNAME_COOKIE, venmo_username)
+    if player:
+        response = make_response(redirect('/'))
+        response.set_cookie(VENMO_USERNAME_COOKIE, venmo_username)
+    else:
+        response = make_response(redirect('/invalid_venmo'))
 
     return response
 

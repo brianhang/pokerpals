@@ -8,6 +8,10 @@ app = Flask(__name__)
 def home():
     return handle_home()
 
+@app.route("/invalid_venmo", strict_slashes=False)
+def invalid_venmo():
+    return "You gave an invalid username :("
+
 @app.post('/login')
 def login():
     return handle_login()
