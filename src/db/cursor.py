@@ -4,7 +4,8 @@ import sqlite3
 
 @contextmanager
 def get():
-    connection = sqlite3.connect(DB_PATH)
+    connection = sqlite3.connect("database.db")
+#      connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
     yield cursor
     connection.commit()
