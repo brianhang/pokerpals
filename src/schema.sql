@@ -11,6 +11,6 @@ CREATE TABLE games (
 CREATE TABLE players (
     venmo_username TEXT PRIMARY KEY NOT NULL,
     game_id INTEGER,
-    total_buyin_chips INTEGER, 
+    total_buyin_chips INTEGER,
     final_chips INTEGER
 )
