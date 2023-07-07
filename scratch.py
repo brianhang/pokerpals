@@ -1,5 +1,5 @@
 import src.db.cursor as clib
-import src.db.queries 
+import src.db.queries as queries
 
 def setup(cur):
     query = r'INSERT INTO games(id, lobby_name, buyin_amt_cents) '\
@@ -17,9 +17,9 @@ def setup(cur):
 if __name__ == '__main__':
     print(clib.get)
     with clib.get() as cur:
-        setup(cur)
-        query = src.db.queries.get_sum_buyins(1)
+#          setup(cur)
+        query = queries.get_payout_query(1)
         print(query)
         cur.execute(query)
-        print(cur.fetchone())
+        print(cur.fetchall())
 
