@@ -9,14 +9,17 @@ from .venmo_utils import is_valid_venmo_username
 
 VENMO_USERNAME_COOKIE = 'venmo_username'
 
+
 def get_venmo_username() -> Optional[str]:
     return request.cookies.get(VENMO_USERNAME_COOKIE)
+
 
 @contextmanager
 def fetch_player() -> Optional[Player]:
     venmmo_username = get_venmo_username()
     player = player_repository.fetch(venmmo_username)
     yield player
+
 
 def handle_home() -> str:
     with fetch_player() as player:
@@ -46,6 +49,7 @@ def handle_home() -> str:
             </html>
             """
 
+
 def handle_login() -> Response:
     venmo_username = request.form.get('venmo-username')
 
@@ -64,8 +68,8 @@ def handle_login() -> Response:
 
     return response
 
+
 def handle_logout() -> Response:
     response = make_response(redirect('/'))
     response.delete_cookie(VENMO_USERNAME_COOKIE)
     return response
-
