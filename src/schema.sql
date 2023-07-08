@@ -1,17 +1,35 @@
 DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS game_players;
+DROP TABLE IF EXISTS pending_payments;
 
 CREATE TABLE games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    creator TEXT NOT NULL,
+    creator_id TEXT NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lobby_name TEXT NOT NULL,
-    buyin_amt_cents INTEGER NOT NULL
+    buyin_cents INTEGER NOT NULL,
+    entry_code TEXT NOT NULL
 );
 
 CREATE TABLE players (
     venmo_username TEXT PRIMARY KEY NOT NULL,
-    game_id INTEGER,
-    total_buyin_chips INTEGER,
-    final_chips INTEGER
-)
+    active_game_id INTEGER
+);
+
+CREATE TABLE game_players (
+    game_id INTEGER NOT NULL,
+    player_id TEXT NOT NULL,
+    join_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    buyin_cents INTEGER NOT NULL,
+    cashout_cents INTEGER,
+    PRIMARY KEY (game_id, player_id)
+);
+
+CREATE TABLE pending_payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    from_player_id TEXT NOT NULL,
+    to_player_id TEXT NOT NULL,
+    cents INTEGER NOT NULL,
+    completed BOOLEAN
+);

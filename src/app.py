@@ -1,6 +1,8 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 
-from player.route import handle_home, handle_login, handle_logout
+from player.route import fetch_player, handle_login_page, handle_login, handle_logout
+from game.route import handle_create_game, handle_game_list, handle_create_game_form, handle_view_game
+
 import db.app_connection
 
 
@@ -12,17 +14,39 @@ def teardown_db(_ex):
     db.app_connection.close()
 
 
-@app.route("/")
+@app.route('/', strict_slashes=False)
 def home():
-    return handle_home()
+    with fetch_player() as player:
+        if player:
+            return handle_game_list(player)
+    return handle_login_page()
 
 
-@app.route("/invalid_venmo", strict_slashes=False)
-def invalid_venmo():
-    return "You gave an invalid username :("
+@app.route('/game/create', strict_slashes=False)
+def game_create_form():
+    with fetch_player() as player:
+        if player:
+            return handle_create_game_form(player)
+    return handle_login_page()
 
 
-@app.post('/login')
+@app.post('/game/create', strict_slashes=False)
+def game_create():
+    with fetch_player() as player:
+        if player:
+            return handle_create_game(player)
+    return redirect(url_for('home'))
+
+
+@app.route('/g/<game_id>')
+def game_view(game_id):
+    with fetch_player() as player:
+        if player:
+            return handle_view_game(player=player, game_id=game_id)
+    return redirect(url_for('home'))
+
+
+@app.post('/login', strict_slashes=False)
 def login():
     return handle_login()
 

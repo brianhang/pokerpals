@@ -20,19 +20,12 @@ def fetch_player() -> Optional[Player]:
     yield player
 
 
-def handle_home() -> str:
+def handle_login_page() -> str:
     last_username = request.args.get('last_username', '').strip()
-    if len(last_username) == 0:
-        last_username = None
+    if last_username and len(last_username) > 0:
+        return render_template('login.html', last_username=last_username)
 
-    with fetch_player() as player:
-        if player:
-            return render_template('index.html')
-
-        if last_username:
-            return render_template('login.html', last_username=last_username)
-
-        return render_template('login.html')
+    return render_template('login.html')
 
 
 def handle_login() -> Response:

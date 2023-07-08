@@ -6,14 +6,15 @@ from .player import Player
 def fetch(venmo_username: str) -> Optional[Player]:
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT venmo_username FROM players WHERE venmo_username = ? LIMIT 1', (venmo_username,))
+            'SELECT venmo_username, active_game_id FROM players WHERE venmo_username = ? LIMIT 1', (venmo_username,))
         row = cursor.fetchone()
 
         if not row:
             return None
 
         return Player(
-            venmo_username=row[0]
+            venmo_username=row[0],
+            active_game_id=row[1]
         )
 
 

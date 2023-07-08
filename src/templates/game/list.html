@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <form method="post" action="/logout">
+        <label for="logout">Welcome, {{ player.venmo_username }}!</label>
+        <input type="hidden" name="_method" value="POST">
+        <input type="submit" name="logout" value="Logout">
+    </form>
+    <div>
+        {% if active_games|length %}
+        {% for game in active_games %}
+        {% endfor %}
+        {% else %}
+        <p>There are currently no active games.</p>
+        {% endif %}
+    </div>
+    <form method="get" action="/game/create/">
+        <input type="submit" value="Create Game">
+    </form>
+</div>
+{% endblock %}
