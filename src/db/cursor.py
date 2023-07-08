@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from .connection import get as get_connection
+from .app_connection import get as get_connection
 
 
 @contextmanager
