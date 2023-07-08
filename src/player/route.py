@@ -1,7 +1,6 @@
 from contextlib import contextmanager
-from flask import Request, Response, make_response, redirect, request
+from flask import Response, make_response, redirect, request, render_template, url_for
 from typing import Optional
-from html import escape as html_escape
 
 from player.player import Player
 from . import repository as player_repository
@@ -22,32 +21,18 @@ def fetch_player() -> Optional[Player]:
 
 
 def handle_home() -> str:
+    last_username = request.args.get('last_username', '').strip()
+    if len(last_username) == 0:
+        last_username = None
+
     with fetch_player() as player:
         if player:
-            logout_button = """
-            <form method="post" action="/logout">
-                <input type="hidden" name="_method" value="POST">
-                <input type="submit" value="Logout">
-            </form>
-            """
-            return f'Welcome back, {html_escape(player.venmo_username)}.{logout_button}'
-        else:
-            return """
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <title>Venmo Login</title>
-            </head>
-            <body>
-            <form action="/login" method="post">
-                <label for="venmo-username">Venmo Username:</label>
-                <input type="text" id="venmo-username" name="venmo-username" required>
-                <br>
-                <input type="submit" value="Login">
-            </form>
-            </body>
-            </html>
-            """
+            return render_template('index.html')
+
+        if last_username:
+            return render_template('login.html', last_username=last_username)
+
+        return render_template('login.html')
 
 
 def handle_login() -> Response:
@@ -64,7 +49,8 @@ def handle_login() -> Response:
         response = make_response(redirect('/'))
         response.set_cookie(VENMO_USERNAME_COOKIE, venmo_username)
     else:
-        response = make_response(redirect('/invalid_venmo'))
+        response = make_response(
+            redirect(url_for('home', last_username=venmo_username)))
 
     return response
 
