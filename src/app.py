@@ -1,8 +1,15 @@
 from flask import Flask
 
 from player.route import handle_home, handle_login, handle_logout
+import db.connection
+
 
 app = Flask(__name__)
+
+
+@app.teardown_appcontext
+def teardown_db(_ex):
+    db.connection.close()
 
 
 @app.route("/")
