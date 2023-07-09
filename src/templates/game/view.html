@@ -1,8 +1,28 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-    <code>
-        {{ game }}
-    </code>
+    <div>
+        <h2>{{ game.lobby_name }}</h2>
+        <h4>Created by {{ game.creator_id }}</h4>
+        <p>
+            <strong>Entry Code</strong>: <code>{{ game.entry_code }}</code>
+        </p>
+    </div>
+    {% if player.active_game_id == game.id %}
+    <div id="game-actions">
+        <h3>Actions</h3>
+        <ul>
+            <li><a href="/game/buyin/">Buy In</a></li>
+        </ul>
+    </div>
+    {% endif %}
+    <div>
+        <h3>Players</h3>
+        <ul>
+            {% for player in players.players %}
+            <li><code>{{ player }}</code></li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endblock %}

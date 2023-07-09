@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for
 
 from player.route import fetch_player, handle_login_page, handle_login, handle_logout
-from game.route import handle_create_game, handle_game_list, handle_create_game_form, handle_view_game
+from game.route import handle_buyin, handle_buyin_form, handle_create_game, handle_game_list, handle_create_game_form, handle_view_game
 
 import db.app_connection
 
@@ -38,14 +38,27 @@ def game_create():
     return redirect(url_for('home'))
 
 
+@app.route('/game/buyin', strict_slashes=False)
+def game_buyin_form():
+    with fetch_player() as player:
+        if player:
+            return handle_buyin_form(player)
+    return redirect(url_for('home'))
+
+
+@app.post('/game/buyin', strict_slashes=False)
+def game_buyin():
+    with fetch_player() as player:
+        if player:
+            return handle_buyin(player)
+    return redirect(url_for('home'))
+
+
 @app.route('/g/<game_id>')
 def game_view(game_id):
     game_id = int(game_id) if game_id.isdigit() else 0
-
     with fetch_player() as player:
-        if player:
-            return handle_view_game(player=player, game_id=game_id)
-    return redirect(url_for('home'))
+        return handle_view_game(player=player, game_id=game_id)
 
 
 @app.post('/login', strict_slashes=False)

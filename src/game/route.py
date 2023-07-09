@@ -1,3 +1,5 @@
+import math
+from typing import Optional
 from player.player import Player
 from flask import Response, render_template, redirect, url_for, request, abort
 from random import choices
@@ -60,9 +62,46 @@ def handle_create_game(player: Player) -> Response:
     return redirect(url_for('game_view', game_id=new_game_id))
 
 
-def handle_view_game(player: Player, game_id: int) -> Response:
+def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
         return abort(404)
 
-    return render_template('game/view.html', game=req_game, player=player)
+    players = game_players.repository.fetch(game_id)
+    return render_template('game/view.html', game=req_game, player=player, players=players)
+
+
+def handle_buyin_form(player: Player) -> Response:
+    game_id = player.active_game_id
+    if not game_id:
+        return redirect(url_for('home')), 400
+
+    active_game = game.repository.fetch(game_id)
+    if not active_game:
+        return redirect(url_for('home')), 400
+
+    buyin_prefill = '{:.2f}'.format(active_game.buyin_cents / 100)
+    return render_template('game/buyin.html', buyin_prefill=buyin_prefill, game=active_game, player=player)
+
+
+def handle_buyin(player: Player) -> Response:
+    game_id = player.active_game_id
+    if not game_id:
+        return redirect(url_for('home')), 400
+
+    active_game = game.repository.fetch(game_id)
+    if not active_game:
+        return redirect(url_for('home')), 400
+
+    err = None
+
+    amount = float(request.form.get('amount', '0'))
+    cents = math.ceil(amount * 100)
+    if cents <= 0:
+        err = 'Please provide a valid amount to buy in'
+
+    if err:
+        return render_template('game/buyin.html', err=err, buyin_prefill=amount, game=active_game, player=player), 400
+
+    game_players.repository.buy_in(game_id, player.venmo_username, cents)
+    return redirect(url_for('game_view', game_id=game_id))
