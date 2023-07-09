@@ -50,9 +50,10 @@ def buy_in(game_id: str, player_id: str, cents: int) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
             'SELECT buyin_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))
-        current_buyin_cents = cursor.fetchone()
+        res = cursor.fetchone()
+        current_buyin_cents = res[0] if res else None
 
-        if not current_buyin_cents:
+        if current_buyin_cents is None:
             raise Exception(
                 f"Player {player_id} has not joined game {game_id}")
 
@@ -65,9 +66,10 @@ def cash_out(game_id: str, player_id: str, cents: int) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
             'SELECT cashout_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))
-        current_cashout_cents = cursor.fetchone()
+        res = cursor.fetchone()
+        current_cashout_cents = res[0] if res else None
 
-        if not current_cashout_cents:
+        if current_cashout_cents is None:
             raise Exception(
                 f"Player {player_id} has not joined game {game_id}")
 
