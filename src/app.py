@@ -40,6 +40,8 @@ def game_create():
 
 @app.route('/g/<game_id>')
 def game_view(game_id):
+    game_id = int(game_id) if game_id.isdigit() else 0
+
     with fetch_player() as player:
         if player:
             return handle_view_game(player=player, game_id=game_id)
