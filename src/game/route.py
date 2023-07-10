@@ -148,7 +148,7 @@ def handle_cashout(player: Player) -> Response:
 
     if cents > max_cents:
         err = f'You can only cash out at most {cents_utils.to_string(max_cents)}'
-    elif cents < 1:
+    elif cents < 0:
         err = 'Please provide a valid amount to cash out'
 
     if err:

@@ -10,22 +10,15 @@
             {{ err }}
         </div>
         {% endif %}
-        {% if cashout_max_cents > 0 %}
         <form action="/game/cashout" method="post">
             <label for="amount">How much would you like to cash out for?</label>
-            <input type="number" name="amount" step="0.01" min="0.01" max="{{ cashout_max }}"
+            <input type="number" name="amount" step="0.01" min="0.00" max="{{ cashout_max }}"
                 value="{{ cashout_prefill }}" required>
             <br />
 
             <input type="submit" value="Cash Out">
             <a href="/g/{{ game.id }}">Cancel</a>
         </form>
-        {% else %}
-        <p>
-            You do not have any remaining money to cash out.
-            <a href="/g/{{ game.id }}">Cancel</a>
-        </p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
