@@ -10,6 +10,7 @@
         </p>
         {% endif %}
     </div>
+    {% if player %}
     {% if player.venmo_username == game.creator_id %}
     <div id="game-admin-actions">
         <h3>Game Actions</h3>
@@ -29,6 +30,7 @@
             {% endif %}
         </ul>
     </div>
+    {% endif %}
     <div>
         <h3>Players</h3>
         <ul>
