@@ -26,6 +26,23 @@ def fetch(game_id: int) -> GamePlayers:
     return game_players
 
 
+def fetch_player(game_id: int, player_id: str) -> Optional[GamePlayer]:
+    with db.cursor.get() as cursor:
+        cursor.execute(
+            'SELECT join_time, buyin_cents, cashout_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id))
+        row = cursor.fetchone()
+
+        if not row:
+            return None
+
+        return GamePlayer(
+            player_venmo_username=player_id,
+            join_time=row[0],
+            buyin_cents=row[1],
+            cashout_cents=row[2]
+        )
+
+
 def add_player(game_id: int, player_id: str) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
@@ -67,12 +84,12 @@ def cash_out(game_id: str, player_id: str, cents: int) -> None:
         cursor.execute(
             'SELECT cashout_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))
         res = cursor.fetchone()
-        current_cashout_cents = res[0] if res else None
 
-        if current_cashout_cents is None:
+        if res is None:
             raise Exception(
                 f"Player {player_id} has not joined game {game_id}")
 
+        current_cashout_cents = (res[0] or 0) if res else 0
         new_cashout_cents = current_cashout_cents + cents
         cursor.execute('UPDATE game_players SET cashout_cents = ? WHERE game_id = ? AND player_id = ?',
                        (new_cashout_cents, game_id, player_id,))

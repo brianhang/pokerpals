@@ -7,6 +7,7 @@ from string import ascii_uppercase
 
 import game.repository
 import game_players.repository
+import utils.cents as cents_utils
 
 
 def generate_entry_code() -> str:
@@ -80,7 +81,7 @@ def handle_buyin_form(player: Player) -> Response:
     if not active_game:
         return redirect(url_for('home')), 400
 
-    buyin_prefill = '{:.2f}'.format(active_game.buyin_cents / 100)
+    buyin_prefill = cents_utils.to_string(active_game.buyin_cents)
     return render_template('game/buyin.html', buyin_prefill=buyin_prefill, game=active_game, player=player)
 
 
@@ -104,4 +105,55 @@ def handle_buyin(player: Player) -> Response:
         return render_template('game/buyin.html', err=err, buyin_prefill=amount, game=active_game, player=player), 400
 
     game_players.repository.buy_in(game_id, player.venmo_username, cents)
+    return redirect(url_for('game_view', game_id=game_id))
+
+
+def handle_cashout_form(player: Player) -> Response:
+    game_id = player.active_game_id
+    if not game_id:
+        return redirect(url_for('home')), 400
+
+    active_game = game.repository.fetch(game_id)
+    if not active_game:
+        return redirect(url_for('home')), 400
+
+    game_player = game_players.repository.fetch_player(
+        game_id, player.venmo_username)
+    if not game_player:
+        return redirect(url_for('home')), 400
+
+    cashout_max_cents = game_player.buyin_cents - \
+        (game_player.cashout_cents or 0)
+    cashout_max = cents_utils.to_string(cashout_max_cents)
+    return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill="0.00", game=active_game, player=player)
+
+
+def handle_cashout(player: Player) -> Response:
+    game_id = player.active_game_id
+    if not game_id:
+        return redirect(url_for('home')), 400
+
+    active_game = game.repository.fetch(game_id)
+    if not active_game:
+        return redirect(url_for('home')), 400
+
+    game_player = game_players.repository.fetch_player(
+        game_id, player.venmo_username)
+    if not game_player:
+        return redirect(url_for('home')), 400
+
+    err = None
+    amount = float(request.form.get('amount', '0'))
+    max_cents = game_player.buyin_cents - (game_player.cashout_cents or 0)
+    cents = math.ceil(amount * 100)
+
+    if cents > max_cents:
+        err = f'You can only cash out at most {cents_utils.to_string(max_cents)}'
+    elif cents < 1:
+        err = 'Please provide a valid amount to cash out'
+
+    if err:
+        return render_template('game/cashout.html', err=err, cashout_prefill=amount, game=active_game, player=player), 400
+
+    game_players.repository.cash_out(game_id, player.venmo_username, cents)
     return redirect(url_for('game_view', game_id=game_id))

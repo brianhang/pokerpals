@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for
 
 from player.route import fetch_player, handle_login_page, handle_login, handle_logout
-from game.route import handle_buyin, handle_buyin_form, handle_create_game, handle_game_list, handle_create_game_form, handle_view_game
+from game.route import handle_buyin, handle_buyin_form, handle_cashout, handle_cashout_form, handle_create_game, handle_game_list, handle_create_game_form, handle_view_game
 
 import db.app_connection
 
@@ -43,7 +43,7 @@ def game_buyin_form():
     with fetch_player() as player:
         if player:
             return handle_buyin_form(player)
-    return redirect(url_for('home'))
+    return redirect(url_for('home')), 403
 
 
 @app.post('/game/buyin', strict_slashes=False)
@@ -51,7 +51,23 @@ def game_buyin():
     with fetch_player() as player:
         if player:
             return handle_buyin(player)
-    return redirect(url_for('home'))
+    return redirect(url_for('home')), 403
+
+
+@app.route('/game/cashout', strict_slashes=False)
+def game_cashout_form():
+    with fetch_player() as player:
+        if player:
+            return handle_cashout_form(player)
+    return redirect(url_for('home')), 403
+
+
+@app.post('/game/cashout', strict_slashes=False)
+def game_cashout():
+    with fetch_player() as player:
+        if player:
+            return handle_cashout(player)
+    return redirect(url_for('home')), 403
 
 
 @app.route('/g/<game_id>')
