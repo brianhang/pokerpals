@@ -9,7 +9,8 @@ CREATE TABLE games (
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     lobby_name TEXT NOT NULL,
     buyin_cents INTEGER NOT NULL,
-    entry_code TEXT NOT NULL
+    entry_code TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL
 );
 
 CREATE TABLE players (

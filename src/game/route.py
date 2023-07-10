@@ -15,13 +15,11 @@ def generate_entry_code() -> str:
 
 
 def handle_game_list(player: Player) -> Response:
-    active_game_id = player.active_game_id
-    if active_game_id:
-        return redirect(url_for('game_view', game_id=active_game_id))
+    active_games = game.repository.fetch_all_active()
+    current_game = next(
+        (game for game in active_games if player.active_game_id == game.id), None)
 
-    games = game.repository.fetch_all()
-
-    return render_template('game/list.html', player=player, games=games)
+    return render_template('game/list.html', player=player, active_games=active_games, current_game=current_game)
 
 
 def handle_create_game_form(player: Player) -> Response:

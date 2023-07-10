@@ -13,7 +13,7 @@ def fetch(game_id: int) -> GamePlayers:
     )
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT player_id, join_time, buyin_cents, cashout_cents FROM game_players WHERE game_id = ?', (game_id,))
+            'SELECT player_id, join_time, buyin_cents, cashout_cents FROM game_players WHERE game_id = ? ORDER BY join_time ASC', (game_id,))
 
         for row in cursor:
             players.append(GamePlayer(

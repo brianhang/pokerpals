@@ -6,16 +6,27 @@
         <input type="hidden" name="_method" value="POST">
         <input type="submit" name="logout" value="Logout">
     </form>
+    {% if current_game %}
+    <div class="info">
+        You are currently in {{ current_game.lobby_name }}. <a href="/g/{{ current_game.id }}/">View the game</a>.
+    </div>
+    {% endif %}
     <div>
+        <h2>Active Games</h2>
         {% if active_games|length %}
-        {% for game in active_games %}
-        {% endfor %}
+        <ul>
+            {% for game in active_games %}
+            <li><a href="/g/{{game.id }}/"><code>{{ game }}</code></a></li>
+            {% endfor %}
+        </ul>
         {% else %}
         <p>There are currently no active games.</p>
         {% endif %}
     </div>
+    {% if not current_game %}
     <form method="get" action="/game/create/">
         <input type="submit" value="Create Game">
     </form>
+    {% endif %}
 </div>
 {% endblock %}

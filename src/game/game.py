@@ -10,3 +10,4 @@ class Game:
     lobby_name: str
     buyin_cents: int
     entry_code: str
+    is_active: bool
