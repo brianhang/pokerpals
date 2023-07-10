@@ -127,6 +127,7 @@ def handle_cashout_form(player: Player) -> Response:
 
 
 def handle_cashout(player: Player) -> Response:
+    player_id = player.venmo_username
     game_id = player.active_game_id
     if not game_id:
         return redirect(url_for('home')), 400
@@ -153,7 +154,8 @@ def handle_cashout(player: Player) -> Response:
     if err:
         return render_template('game/cashout.html', err=err, cashout_prefill=amount, game=active_game, player=player), 400
 
-    game_players.repository.cash_out(game_id, player.venmo_username, cents)
+    game_players.repository.cash_out(game_id, player_id, cents)
+    game_players.repository.remove_player(game_id, player_id)
     return redirect(url_for('game_view', game_id=game_id))
 
 

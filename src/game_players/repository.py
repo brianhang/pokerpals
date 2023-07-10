@@ -48,7 +48,7 @@ def add_player(game_id: int, player_id: str) -> None:
         cursor.execute(
             'UPDATE players SET active_game_id = ? WHERE venmo_username = ?', (game_id, player_id,))
         cursor.execute(
-            'INSERT INTO game_players (game_id, player_id, buyin_cents) VALUES (?, ?, 0)', (game_id, player_id,))
+            'INSERT OR IGNORE INTO game_players (game_id, player_id, buyin_cents) VALUES (?, ?, 0)', (game_id, player_id,))
 
 
 def remove_player(game_id: int, player_id: str) -> None:
