@@ -19,17 +19,22 @@
         </ul>
     </div>
     {% endif %}
+    {% if player.active_game_id == game.id %}
     <div id="game-player-actions">
         <h3>Player Actions</h3>
         <ul>
-            {% if player.active_game_id == game.id %}
             <li><a href="/game/buyin/">Buy In</a></li>
             <li><a href="/game/cashout/">Cash Out</a></li>
-            {% else %}
-            <li><a href="/game/join/{{ game.id }}/">Join Game</a></li>
-            {% endif %}
         </ul>
     </div>
+    {% elif not player.active_game_id %}
+    <div id="game-player-actions">
+        <h3>Player Actions</h3>
+        <ul>
+            <li><a href="/game/join/{{ game.id }}/">Join Game</a></li>
+        </ul>
+    </div>
+    {% endif %}
     {% endif %}
     <div>
         <h3>Players</h3>
