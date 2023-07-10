@@ -122,10 +122,10 @@ def handle_cashout_form(player: Player) -> Response:
     if not game_player:
         return redirect(url_for('home')), 400
 
-    cashout_max_cents = game_player.buyin_cents - \
-        (game_player.cashout_cents or 0)
+    cashout_max_cents = game_player.buyin_cents
     cashout_max = cents_utils.to_string(cashout_max_cents)
-    return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill="0.00", game=active_game, player=player)
+    cashout_prefill = cents_utils.to_string(game_player.cashout_cents or 0)
+    return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill=cashout_prefill, game=active_game, player=player)
 
 
 def handle_cashout(player: Player) -> Response:
@@ -144,7 +144,7 @@ def handle_cashout(player: Player) -> Response:
 
     err = None
     amount = float(request.form.get('amount', '0'))
-    max_cents = game_player.buyin_cents - (game_player.cashout_cents or 0)
+    max_cents = game_player.buyin_cents
     cents = math.ceil(amount * 100)
 
     if cents > max_cents:
