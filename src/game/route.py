@@ -157,3 +157,37 @@ def handle_cashout(player: Player) -> Response:
 
     game_players.repository.cash_out(game_id, player.venmo_username, cents)
     return redirect(url_for('game_view', game_id=game_id))
+
+
+def handle_join_game_form(player: Player, game_id: int) -> Response:
+    active_game_id = player.active_game_id
+    if active_game_id:
+        return redirect(url_for('game_view', game_id=active_game_id)), 400
+
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
+        return abort(404)
+
+    return render_template('game/join.html', game=req_game, player=player)
+
+
+def handle_join_game(player: Player, game_id: int) -> Response:
+    active_game_id = player.active_game_id
+    if active_game_id:
+        return redirect(url_for('game_view', game_id=active_game_id)), 400
+
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
+        return abort(404)
+
+    err = None
+    entry_code = request.form.get('entry-code')
+
+    if entry_code.upper().strip() != req_game.entry_code.upper().strip():
+        err = 'The provided entry code is incorrect, please try again'
+
+    if err:
+        return render_template('game/join.html', err=err, entry_code_prefill=entry_code, game=req_game, player=player), 403
+
+    game_players.repository.add_player(game_id, player.venmo_username)
+    return redirect(url_for('game_view', game_id=game_id))
