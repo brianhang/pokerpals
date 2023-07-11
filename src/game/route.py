@@ -67,7 +67,8 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
         return abort(404)
 
     players = game_players.repository.fetch(game_id)
-    return render_template('game/view.html', game=req_game, player=player, players=players)
+    buyin_total = cents_utils.to_string(players.total_buyin_cents())
+    return render_template('game/view.html', game=req_game, player=player, players=players, buyin_total=buyin_total)
 
 
 def handle_buyin_form(player: Player) -> Response:

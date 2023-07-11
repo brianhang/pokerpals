@@ -4,11 +4,12 @@
     <div>
         <h2>{{ game.lobby_name }}</h2>
         <h4>Created by {{ game.creator_id }}</h4>
-        {% if player.active_game_id == game.id or game.creator_id == player.venmo_username %}
-        <p>
-            <strong>Entry Code</strong>: <code>{{ game.entry_code }}</code>
-        </p>
-        {% endif %}
+        <ul>
+            {% if player.active_game_id == game.id or game.creator_id == player.venmo_username %}
+            <li><strong>Entry Code</strong>: <code>{{ game.entry_code }}</code></li>
+            {% endif %}
+            <li><strong>Buyin Total</strong>: {{ buyin_total }}</li>
+        </ul>
     </div>
     {% if player %}
     {% if player.venmo_username == game.creator_id %}

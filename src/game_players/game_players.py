@@ -15,3 +15,9 @@ class GamePlayer:
 class GamePlayers:
     game_id: int
     players: List[GamePlayer]
+
+    def total_buyin_cents(self) -> int:
+        return sum(player.buyin_cents for player in self.players)
+
+    def total_cashout_cents(self) -> int:
+        return sum(player.cashout_cents for player in self.players)
