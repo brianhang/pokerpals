@@ -27,10 +27,11 @@ CREATE TABLE game_players (
     PRIMARY KEY (game_id, player_id)
 );
 
-CREATE TABLE pending_payments (
+CREATE TABLE game_payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_id INTEGER NOT NULL,
     from_player_id TEXT NOT NULL,
     to_player_id TEXT NOT NULL,
     cents INTEGER NOT NULL,
-    completed BOOLEAN
+    completed BOOLEAN NOT NULL
 );
