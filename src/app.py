@@ -95,11 +95,12 @@ def game_join(game_id):
     return redirect(url_for('home')), 403
 
 
-@app.route('/game/end', strict_slashes=False)
-def game_end_form():
+@app.route('/game/end/<game_id>', strict_slashes=False)
+def game_end_form(game_id):
     with fetch_player() as player:
         if player:
-            return handle_end_game(player)
+            game_id = int(game_id) if game_id.isdigit() else 0
+            return handle_end_game(player, game_id)
     return redirect(url_for('home')), 403
 
 

@@ -194,19 +194,15 @@ def handle_join_game(player: Player, game_id: int) -> Response:
     return redirect(url_for('game_view', game_id=game_id))
 
 
-def handle_end_game(player: Player) -> Response:
-    active_game_id = player.active_game_id
-    if not active_game_id:
+def handle_end_game(player: Player, game_id: int) -> Response:
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
         return redirect(url_for('home')), 404
 
-    active_game = game.repository.fetch(active_game_id)
-    if not active_game:
-        return redirect(url_for('home')), 404
+    if req_game.creator_id != player.venmo_username:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
 
-    if active_game.creator_id != player.venmo_username:
-        return redirect(url_for('game_view', game_id=active_game_id)), abort(403)
-
-    players = game_players.repository.fetch(active_game_id)
+    players = game_players.repository.fetch(game_id)
 
     warning = None
     err = None
@@ -217,4 +213,4 @@ def handle_end_game(player: Player) -> Response:
     elif leftover_cents < 0:
         err = f'There is ${cents_utils.to_string(-leftover_cents)} extra being cashed out, please check the cash out amounts are valid'
 
-    return render_template('game/end.html', player=player, game=active_game, warning=warning, err=err)
+    return render_template('game/end.html', player=player, game=req_game, warning=warning, err=err)
