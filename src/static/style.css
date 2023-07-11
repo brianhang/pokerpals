@@ -21,6 +21,15 @@ body {
     border-radius: 0.3rem;
 }
 
+.warn {
+    background-color: #e7d08f;
+    color: #5a4200;
+    padding: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.3rem;
+}
+
 .info {
     background-color: #2c88ce;
     color: #eeeeee;
