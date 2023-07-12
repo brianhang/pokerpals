@@ -25,7 +25,9 @@
         <h3>Player Actions</h3>
         <ul>
             <li><a href="/game/buyin/">Buy In</a></li>
+            {% if game_player.buyin_cents > 0 %}
             <li><a href="/game/cashout/">Cash Out</a></li>
+            {% endif %}
         </ul>
     </div>
     {% elif not player.active_game_id %}

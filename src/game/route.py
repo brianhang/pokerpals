@@ -2,6 +2,7 @@ import math
 from random import choices
 from string import ascii_uppercase
 from typing import Optional
+from game_players.game_players import GamePlayer, GamePlayers
 
 import game_players.repository
 import payment.repository
@@ -17,6 +18,19 @@ from .validation import get_end_game_err
 
 def generate_entry_code() -> str:
     return ''.join(choices(ascii_uppercase, k=4))
+
+
+def get_max_cashout_cents(cur_game_players: GamePlayers, cur_game_player: GamePlayer) -> int:
+    game_remaining_cents = cur_game_players.total_buyin_cents() \
+        - cur_game_players.total_cashout_cents() \
+        + (cur_game_player.cashout_cents or 0)
+    return game_remaining_cents
+
+
+def find_game_player(cur_game_players: GamePlayers, player_id: str) -> Optional[GamePlayer]:
+    return next((game_player
+                 for game_player in cur_game_players.players
+                 if game_player.player_venmo_username == player_id), None)
 
 
 def handle_game_list(player: Player) -> Response:
@@ -71,9 +85,10 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     if not req_game:
         return abort(404)
 
-    players = game_players.repository.fetch(game_id)
-    buyin_total = cents_utils.to_string(players.total_buyin_cents())
-    return render_template('game/view.html', game=req_game, player=player, players=players, buyin_total=buyin_total)
+    req_game_players = game_players.repository.fetch(game_id)
+    game_player = find_game_player(req_game_players, player.venmo_username)
+    buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
+    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player)
 
 
 def handle_buyin_form(player: Player) -> Response:
@@ -121,12 +136,12 @@ def handle_cashout_form(player: Player) -> Response:
     if not active_game:
         return redirect(url_for('home')), 400
 
-    game_player = game_players.repository.fetch_player(
-        game_id, player.venmo_username)
+    active_game_players = game_players.repository.fetch(game_id)
+    game_player = find_game_player(active_game_players, player.venmo_username)
     if not game_player:
         return redirect(url_for('home')), 400
 
-    cashout_max_cents = game_player.buyin_cents
+    cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cashout_max = cents_utils.to_string(cashout_max_cents)
     cashout_prefill = cents_utils.to_string(game_player.cashout_cents or 0)
     return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill=cashout_prefill, game=active_game, player=player)
@@ -142,18 +157,18 @@ def handle_cashout(player: Player) -> Response:
     if not active_game:
         return redirect(url_for('home')), 400
 
-    game_player = game_players.repository.fetch_player(
-        game_id, player.venmo_username)
+    active_game_players = game_players.repository.fetch(game_id)
+    game_player = find_game_player(active_game_players, player.venmo_username)
     if not game_player:
         return redirect(url_for('home')), 400
 
     err = None
     amount = float(request.form.get('amount', '0'))
-    max_cents = game_player.buyin_cents
+    cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cents = math.ceil(amount * 100)
 
-    if cents > max_cents:
-        err = f'You can only cash out at most {cents_utils.to_string(max_cents)}'
+    if cents > cashout_max_cents:
+        err = f'You can only cash out at most {cents_utils.to_string(cashout_max_cents)}'
     elif cents < 0:
         err = 'Please provide a valid amount to cash out'
 
@@ -220,6 +235,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
 
     return render_template('game/end.html', player=player, game=req_game, warning=warning, err=err)
 
+
 def handle_end_game(player: Player, game_id: int) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
@@ -250,4 +266,3 @@ def handle_end_game(player: Player, game_id: int) -> Response:
     game.repository.set_active(game_id, False)
 
     return redirect(url_for('game_view', game_id=game_id))
-
