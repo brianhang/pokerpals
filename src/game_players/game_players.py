@@ -20,4 +20,4 @@ class GamePlayers:
         return sum(player.buyin_cents for player in self.players)
 
     def total_cashout_cents(self) -> int:
-        return sum(player.cashout_cents for player in self.players)
+        return sum(player.cashout_cents for player in self.players if player.cashout_cents)
