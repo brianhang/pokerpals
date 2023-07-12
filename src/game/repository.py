@@ -48,7 +48,7 @@ def fetch(game_id: int) -> Optional[Game]:
             lobby_name=row[2],
             buyin_cents=row[3],
             entry_code=row[4],
-            is_active=row[5]
+            is_active=bool(row[5])
         )
 
 

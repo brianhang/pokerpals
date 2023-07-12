@@ -48,5 +48,15 @@
             {% endfor %}
         </ul>
     </div>
+    {% if payments %}
+    <div>
+        <h3>Payments</h3>
+        <ul>
+            {% for payment in payments %}
+            <li><code>{{ payment }}</code></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

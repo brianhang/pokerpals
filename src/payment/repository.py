@@ -16,7 +16,7 @@ def fetch_for_game(game_id: int) -> list[Payment]:
                 from_player_id=row[1],
                 to_player_id=row[2],
                 cents=row[3],
-                completed=row[4]
+                completed=bool(row[4])
             ))
 
     return payments

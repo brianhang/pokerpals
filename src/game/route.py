@@ -90,7 +90,8 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
-    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total)
+    payments = payment.repository.fetch_for_game(game_id)
+    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments)
 
 
 def handle_buyin_form(player: Player) -> Response:
