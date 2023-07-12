@@ -88,7 +88,9 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     req_game_players = game_players.repository.fetch(game_id)
     game_player = find_game_player(req_game_players, player.venmo_username)
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
-    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player)
+    cashout_total = cents_utils.to_string(
+        req_game_players.total_cashout_cents())
+    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total)
 
 
 def handle_buyin_form(player: Player) -> Response:
