@@ -12,6 +12,7 @@ from flask import Response, abort, redirect, render_template, request, url_for
 from player.player import Player
 
 import game.repository
+import utils.venmo.link
 
 from .validation import get_end_game_err
 
@@ -91,7 +92,19 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
     payments = payment.repository.fetch_for_game(game_id)
-    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments)
+
+    pending_payment = next((payment for payment in payments
+                           if payment.from_player_id == player.venmo_username and not payment.completed), None)
+    venmo_url = None
+
+    if pending_payment:
+        venmo_url = utils.venmo.link.get_payment_url(
+            venmo_username=pending_payment.to_player_id,
+            txn=utils.venmo.link.Transaction.CHARGE,
+            amount_cents=pending_payment.cents,
+            is_mobile=request.MOBILE)
+
+    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments, venmo_url=venmo_url, pending_payment=pending_payment)
 
 
 def handle_buyin_form(player: Player) -> Response:

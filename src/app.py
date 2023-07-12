@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for
+from flask_mobility import Mobility
 
 import db.app_connection
 from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
@@ -11,6 +12,7 @@ from player.route import (fetch_player, handle_login, handle_login_page,
                           handle_logout)
 
 app = Flask(__name__)
+Mobility(app)
 
 
 @app.teardown_appcontext

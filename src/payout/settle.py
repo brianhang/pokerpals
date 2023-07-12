@@ -15,7 +15,7 @@ def get_transactions(game_players: list[GamePlayer]) -> list[Transaction]:
     negative = []
 
     for player in game_players:
-        diff = player.cashout_cents - player.buyin_cents
+        diff = (player.cashout_cents or 0) - player.buyin_cents
         entry = [diff, player.player_venmo_username]
         if diff > 0:
             positive.append(entry)

@@ -45,3 +45,15 @@ body {
     gap: 0.2rem;
     margin-bottom: 20px;
 }
+
+.venmo-cta {
+    text-align: center;
+}
+
+.venmo-cta a {
+    background-color: #009cde;
+    color: #fff;
+    padding: 1rem;
+    text-decoration: none;
+    border-radius: 0.3rem;
+}

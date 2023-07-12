@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
+    {% if venmo_url and pending_payment %}
+    <div class="venmo-cta">
+        <a href="{{ venmo_url }}">Venmo {{ pending_payment.to_player_id }}</a>
+    </div>
+    {% endif %}
     <div>
         <h2>{{ game.lobby_name }}</h2>
         <h4>Created by {{ game.creator_id }}</h4>
