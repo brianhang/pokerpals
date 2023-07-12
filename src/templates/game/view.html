@@ -6,7 +6,9 @@
         <h4>Created by {{ game.creator_id }}</h4>
         <ul>
             {% if player.active_game_id == game.id or game.creator_id == player.venmo_username %}
-            <li><strong>Entry Code</strong>: <code>{{ game.entry_code }}</code></li>
+            <li><strong>Entry Code</strong>: <a
+                    href="/game/join/{{ game.id }}/?code={{ game.entry_code }}"><code>{{ game.entry_code }}</code></a>
+            </li>
             {% endif %}
             <li><strong>Buyin Total</strong>: {{ buyin_total }}</li>
             <li><strong>Cash Out Total</strong>: {{ cashout_total }}</li>

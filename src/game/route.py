@@ -186,13 +186,14 @@ def handle_cashout(player: Player) -> Response:
 def handle_join_game_form(player: Player, game_id: int) -> Response:
     active_game_id = player.active_game_id
     if active_game_id:
-        return redirect(url_for('game_view', game_id=active_game_id)), 400
+        return redirect(url_for('game_view', game_id=active_game_id))
 
     req_game = game.repository.fetch(game_id)
     if not req_game or not req_game.is_active:
         return abort(404)
 
-    return render_template('game/join.html', game=req_game, player=player)
+    entry_code = request.args.get('code', '')
+    return render_template('game/join.html', game=req_game, player=player, entry_code_prefill=entry_code)
 
 
 def handle_join_game(player: Player, game_id: int) -> Response:
