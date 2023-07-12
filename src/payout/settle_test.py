@@ -10,12 +10,22 @@ class TestSettle(unittest.TestCase):
     def test_empty(self):
         game_players = self.make_players([])
         transactions = get_transactions(game_players)
-        self.assert_transactions_valid(game_players, transactions)
+        self.assertListEqual([], transactions, 'There should be no transactions with no players')
 
     def test_no_op(self):
         game_players = self.make_players([(0, 0)])
         transactions = get_transactions(game_players)
-        self.assert_transactions_valid(game_players, transactions)
+        self.assertListEqual([], transactions, 'No transactions are necessary')
+
+    def test_no_op_nonzero(self):
+        game_players = self.make_players([(10_00, 10_00)])
+        transactions = get_transactions(game_players)
+        self.assertListEqual([], transactions, 'No transactions are necessary')
+
+    def test_no_op_nonzero_many(self):
+        game_players = self.make_players([(10_00, 10_00), (20_00, 20_00), (0, 0)])
+        transactions = get_transactions(game_players)
+        self.assertListEqual([], transactions, 'No transactions are necessary')
 
     def test_one_player(self):
         game_players = self.make_players([(10_00, 10_00)])
@@ -36,6 +46,12 @@ class TestSettle(unittest.TestCase):
     def test_two_negative(self):
         game_players = self.make_players(
             [(10_00, 0), (10_00, 0), (10_00, 30_00)])
+        transactions = get_transactions(game_players)
+        self.assert_transactions_valid(game_players, transactions)
+
+    def test_many(self):
+        game_players = self.make_players(
+            [(10_00, 5_00), (10_00, 5_00), (10_00, 30_00), (10_00, 0)])
         transactions = get_transactions(game_players)
         self.assert_transactions_valid(game_players, transactions)
 
