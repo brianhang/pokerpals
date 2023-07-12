@@ -186,7 +186,7 @@ def handle_join_game_form(player: Player, game_id: int) -> Response:
         return redirect(url_for('game_view', game_id=active_game_id)), 400
 
     req_game = game.repository.fetch(game_id)
-    if not req_game:
+    if not req_game or not req_game.is_active:
         return abort(404)
 
     return render_template('game/join.html', game=req_game, player=player)
@@ -198,7 +198,7 @@ def handle_join_game(player: Player, game_id: int) -> Response:
         return redirect(url_for('game_view', game_id=active_game_id)), 400
 
     req_game = game.repository.fetch(game_id)
-    if not req_game:
+    if not req_game or not req_game.is_active:
         return abort(404)
 
     err = None
@@ -219,7 +219,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
     if not req_game:
         return redirect(url_for('home')), 404
 
-    if req_game.creator_id != player.venmo_username:
+    if not req_game.is_active or req_game.creator_id != player.venmo_username:
         return redirect(url_for('game_view', game_id=game_id)), abort(403)
 
     players = game_players.repository.fetch(game_id)
