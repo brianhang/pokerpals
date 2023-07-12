@@ -1,7 +1,9 @@
 import datetime
 import time
+from typing import List, Optional
+
 import db.cursor
-from typing import Optional, List
+
 from .game import Game
 
 
@@ -72,3 +74,9 @@ def create(creator_id: str, lobby_name: str, buyin_cents: int, entry_code: str) 
         entry_code=entry_code,
         is_active=True
     )
+
+
+def set_active(game_id: int, is_active: bool) -> None:
+    with db.cursor.get() as cursor:
+        cursor.execute(
+            'UPDATE games SET is_active = ? WHERE id = ?', (is_active, game_id,))

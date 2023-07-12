@@ -1,13 +1,18 @@
 import math
-from typing import Optional
-from player.player import Player
-from flask import Response, render_template, redirect, url_for, request, abort
 from random import choices
 from string import ascii_uppercase
+from typing import Optional
+
+import game_players.repository
+import payment.repository
+import payout.settle
+import utils.cents as cents_utils
+from flask import Response, abort, redirect, render_template, request, url_for
+from player.player import Player
 
 import game.repository
-import game_players.repository
-import utils.cents as cents_utils
+
+from .validation import get_end_game_err
 
 
 def generate_entry_code() -> str:
@@ -194,7 +199,7 @@ def handle_join_game(player: Player, game_id: int) -> Response:
     return redirect(url_for('game_view', game_id=game_id))
 
 
-def handle_end_game(player: Player, game_id: int) -> Response:
+def handle_end_game_form(player: Player, game_id: int) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
         return redirect(url_for('home')), 404
@@ -210,7 +215,39 @@ def handle_end_game(player: Player, game_id: int) -> Response:
     leftover_cents = players.total_buyin_cents() - players.total_cashout_cents()
     if leftover_cents > 0:
         warning = f'There is ${cents_utils.to_string(leftover_cents)} left on the table, please check everyone has cashed out'
-    elif leftover_cents < 0:
-        err = f'There is ${cents_utils.to_string(-leftover_cents)} extra being cashed out, please check the cash out amounts are valid'
+    else:
+        err = get_end_game_err(players)
 
     return render_template('game/end.html', player=player, game=req_game, warning=warning, err=err)
+
+def handle_end_game(player: Player, game_id: int) -> Response:
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
+        return redirect(url_for('home')), 404
+
+    if not req_game.is_active:
+        return redirect(url_for('game_view', game_id=game_id)), abort(400)
+    if req_game.creator_id != player.venmo_username:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
+
+    req_game_players = game_players.repository.fetch(game_id)
+    err = get_end_game_err(req_game_players)
+
+    if err:
+        return abort(403)
+
+    transactions = payout.settle.get_transactions(req_game_players.players)
+
+    for transaction in transactions:
+        payment.repository.create(
+            game_id=game_id,
+            from_player_id=transaction.sender_id,
+            to_player_id=transaction.receiver_id,
+            cents=transaction.cents
+        )
+
+    game_players.repository.remove_all_players(game_id)
+    game.repository.set_active(game_id, False)
+
+    return redirect(url_for('game_view', game_id=game_id))
+

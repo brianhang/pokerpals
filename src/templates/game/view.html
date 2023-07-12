@@ -11,7 +11,7 @@
             <li><strong>Buyin Total</strong>: {{ buyin_total }}</li>
         </ul>
     </div>
-    {% if player %}
+    {% if player and game.is_active %}
     {% if player.venmo_username == game.creator_id %}
     <div id="game-admin-actions">
         <h3>Game Actions</h3>

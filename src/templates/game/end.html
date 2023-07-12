@@ -20,11 +20,11 @@
             want to cash out for. This cannot be reversed! Are you sure you want to end the game?
         </p>
         {% if err %}
-        <a href="/g/{{ game.id }}">Cancel</a>
+        <a href="/g/{{ game.id }}/">Cancel</a>
         {% else %}
-        <form action="/game/end" method="post">
+        <form action="/game/end/{{ game.id }}/" method="post">
             <input type="submit" value="End Game">
-            <a href="/g/{{ game.id }}">Cancel</a>
+            <a href="/g/{{ game.id }}/">Cancel</a>
         </form>
         {% endif %}
     </div>

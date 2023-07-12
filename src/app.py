@@ -1,10 +1,14 @@
 from flask import Flask, redirect, url_for
 
-from player.route import fetch_player, handle_login_page, handle_login, handle_logout
-from game.route import handle_buyin, handle_buyin_form, handle_cashout, handle_cashout_form, handle_create_game, handle_end_game, handle_game_list, handle_create_game_form, handle_join_game, handle_join_game_form, handle_view_game
-
 import db.app_connection
-
+from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
+                        handle_cashout_form, handle_create_game,
+                        handle_create_game_form, handle_end_game,
+                        handle_end_game_form, handle_game_list,
+                        handle_join_game, handle_join_game_form,
+                        handle_view_game)
+from player.route import (fetch_player, handle_login, handle_login_page,
+                          handle_logout)
 
 app = Flask(__name__)
 
@@ -97,6 +101,15 @@ def game_join(game_id):
 
 @app.route('/game/end/<game_id>', strict_slashes=False)
 def game_end_form(game_id):
+    with fetch_player() as player:
+        if player:
+            game_id = int(game_id) if game_id.isdigit() else 0
+            return handle_end_game_form(player, game_id)
+    return redirect(url_for('home')), 403
+
+
+@app.post('/game/end/<game_id>', strict_slashes=False)
+def game_end(game_id):
     with fetch_player() as player:
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
