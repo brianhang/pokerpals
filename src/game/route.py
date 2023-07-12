@@ -100,7 +100,7 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     if pending_payment:
         venmo_url = utils.venmo.link.get_payment_url(
             venmo_username=pending_payment.to_player_id,
-            txn=utils.venmo.link.Transaction.CHARGE,
+            txn=utils.venmo.link.Transaction.PAY,
             amount_cents=pending_payment.cents,
             is_mobile=request.MOBILE)
 
