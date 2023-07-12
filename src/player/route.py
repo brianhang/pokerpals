@@ -4,7 +4,7 @@ from typing import Optional
 
 from player.player import Player
 from . import repository as player_repository
-from .venmo_utils import is_valid_venmo_username
+from utils.venmo.username import is_valid_venmo_username
 
 VENMO_USERNAME_COOKIE = 'venmo_username'
 
