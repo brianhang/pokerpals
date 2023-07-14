@@ -17,14 +17,19 @@
         {% endif %}
         <p>
             Ending the game will lead to payments being calculated for everyone and prevent changes to how much people
-            want to cash out for. This cannot be reversed! Are you sure you want to end the game?
+            want to cash out for. <em>This cannot be undone!</em>
+        </p>
+        <p>
+            Are you sure you want to end the game?
         </p>
         {% if err %}
-        <a href="/g/{{ game.id }}/">Cancel</a>
+        <a class="cancel-btn" href="/g/{{ game.id }}/">Cancel</a>
         {% else %}
-        <form action="/game/end/{{ game.id }}/" method="post">
-            <input type="submit" value="End Game">
-            <a href="/g/{{ game.id }}/">Cancel</a>
+        <form class="form" action="/game/end/{{ game.id }}/" method="post">
+            <div class="form-buttons">
+                <input type="submit" value="End Game">
+                <a class="cancel-btn" href="/g/{{ game.id }}/">Cancel</a>
+            </div>
         </form>
         {% endif %}
     </div>

@@ -1,23 +1,22 @@
 {% extends "layout.html" %}
+{% from "game/title.html" import game_title %}
 {% block body %}
 <div class="container">
-    <div>
-        <h2>{{ game.lobby_name }}</h2>
-    </div>
+    {{ game_title(game) }}
     <div>
         {% if err %}
         <div class="error">
             {{ err }}
         </div>
         {% endif %}
-        <form action="/game/cashout" method="post">
-            <label for="amount">How much would you like to cash out for?</label>
-            <input type="number" name="amount" step="0.01" min="0.00" max="{{ cashout_max }}"
+        <form class="form" action="/game/cashout" method="post">
+            <label for="amount">Please enter the amount to cash out:</label>
+            <input autofocus="number" name="amount" step="0.01" min="0.00" max="{{ cashout_max }}"
                 value="{{ cashout_prefill }}" required>
-            <br />
-
-            <input type="submit" value="Cash Out">
-            <a href="/g/{{ game.id }}">Cancel</a>
+            <div class="form-buttons">
+                <input type="submit" value="Cash Out">
+                <a class="cancel-btn" href="/g/{{ game.id }}">Cancel</a>
+            </div>
         </form>
     </div>
 </div>

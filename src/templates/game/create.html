@@ -6,7 +6,7 @@
         {{ err }}
     </div>
     {% endif %}
-    <form action="/game/create" method="post">
+    <form class="form" action="/game/create" method="post">
         <div class="create-game-form">
             <label for="lobby-name">Lobby Name:</label>
             <input type="text" id="lobby-name" name="lobby-name" value="{{ lobby_name }}" required>
@@ -14,7 +14,10 @@
             <input type="number" id="buy-in" name="buy-in" min="0.01" step="0.01" value="25.00" required>
             <label for="entry-code">Entry Code:</label>
             <input type="text" id="entry-code" name="entry-code" value="{{ entry_code }}" required>
-            <input type="submit" value="Create Lobby">
+        </div>
+        <div class="form-buttons">
+            <input autofocus type="submit" value="Create Lobby">
+            <a class="cancel-btn" href="/">Cancel</a>
         </div>
     </form>
 </div>

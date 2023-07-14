@@ -1,22 +1,21 @@
 {% extends "layout.html" %}
+{% from "game/title.html" import game_title %}
 {% block body %}
 <div class="container">
-    <div>
-        <h2>{{ game.lobby_name }}</h2>
-    </div>
+    {{ game_title(game) }}
     <div>
         {% if err %}
         <div class="error">
             {{ err }}
         </div>
         {% endif %}
-        <form action="/game/join/{{ game.id }}/" method="post">
-            <label for="entry-code">Please enter the entry code for the game</label>
-            <input type="text" name="entry-code" value="{{ entry_code_prefill }}" required>
-            <br />
-
-            <input type="submit" value="Join Game">
-            <a href="/g/{{ game.id }}/">Cancel</a>
+        <form class="form" action="/game/join/{{ game.id }}/" method="post">
+            <label for="entry-code">Please enter the entry code for the game:</label>
+            <input autofocus type="text" name="entry-code" value="{{ entry_code_prefill }}" required>
+            <div class="form-buttons">
+                <input type="submit" value="Join Game">
+                <a class="cancel-btn" href="/g/{{ game.id }}/">Cancel</a>
+            </div>
         </form>
     </div>
 </div>

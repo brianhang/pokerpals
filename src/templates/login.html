@@ -6,10 +6,9 @@
         The Venmo username is not valid, please try another username.
     </div>
     {% endif %}
-    <form action="/login" method="post">
-        <label for="venmo-username">Venmo Username:</label>
-        <input type="text" id="venmo-username" name="venmo-username" value="{{ last_username }}" required>
-        <br>
+    <form class="form" action="/login" method="post">
+        <label for="venmo-username">Please enter your Venmo username:</label>
+        <input autofocus type="text" id="venmo-username" name="venmo-username" value="{{ last_username }}" required>
         <input type="submit" value="Login">
     </form>
 </div>

@@ -1,4 +1,29 @@
 {% extends "layout.html" %}
+{% from "game/title.html" import game_title %}
+
+
+{% macro player_item(player) %}
+<div class="player-item">
+    <h3>
+        <a href="https://www.venmo.com/{{ player.player_venmo_username }}/">
+            {{ player.player_venmo_username }}
+        </a>
+    </h3>
+    <div class="player-info">
+        <ul>
+            {% if player.buyin_cents > 0 %}
+            <li><strong>Bought in</strong>: ${{ player.buyin_text() }}</li>
+            {% else %}
+            <li>Spectating</li>
+            {% endif %}
+            {% if player.cashout_cents %}
+            <li><strong>Cashed out</strong>: ${{ player.cashout_text() }}</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+{% endmacro %}
+
 {% block body %}
 <div class="container">
     {% if venmo_url and pending_payment %}
@@ -7,16 +32,18 @@
     </div>
     {% endif %}
     <div>
-        <h2>{{ game.lobby_name }}</h2>
-        <h4>Created by {{ game.creator_id }}</h4>
+        {{ game_title(game) }}
+        <div class="secondary"><em>Created by <a href="https://venmo.com/{{ game.creator_id }}/">{{ game.creator_id
+                    }}</a></em></div>
         <ul>
             {% if player.active_game_id == game.id or game.creator_id == player.venmo_username %}
             <li><strong>Entry Code</strong>: <a
                     href="/game/join/{{ game.id }}/?code={{ game.entry_code }}"><code>{{ game.entry_code }}</code></a>
             </li>
             {% endif %}
-            <li><strong>Buyin Total</strong>: {{ buyin_total }}</li>
-            <li><strong>Cash Out Total</strong>: {{ cashout_total }}</li>
+            <li><strong>Buyin</strong>: ${{ buyin_amount }}</li>
+            <li><strong>Buyin Total</strong>: ${{ buyin_total }}</li>
+            <li><strong>Cash Out Total</strong>: ${{ cashout_total }}</li>
         </ul>
     </div>
     {% if player and game.is_active %}
@@ -49,18 +76,22 @@
     {% endif %}
     <div>
         <h3>Players</h3>
-        <ul>
+        <div class="player-list">
             {% for player in players.players %}
-            <li><code>{{ player }}</code></li>
+            {{ player_item(player) }}
             {% endfor %}
-        </ul>
+        </div>
     </div>
     {% if payments %}
-    <div>
+    <div class="game-payments">
         <h3>Payments</h3>
         <ul>
             {% for payment in payments %}
-            <li><code>{{ payment }}</code></li>
+            <li>
+                <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
+                sends ${{ payment.amount_text() }} to
+                <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
+            </li>
             {% endfor %}
         </ul>
     </div>

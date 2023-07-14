@@ -1,11 +1,24 @@
 {% extends "layout.html" %}
+
+{% macro game_list_item(game) %}
+<a class="game-list-item" href="/g/{{ game.id }}">
+    <div>
+        <h3>{{ game.lobby_name }}<span class="game-view-id secondary">#{{ game.id }}</span></h3>
+        <div class="game-info">
+            Buy In: ${{ game.buyin_text() }}
+        </div>
+    </div>
+</a>
+{% endmacro %}
+
 {% block body %}
 <div class="container">
-    <form method="post" action="/logout">
-        <label for="logout">Welcome, {{ player.venmo_username }}!</label>
-        <input type="hidden" name="_method" value="POST">
-        <input type="submit" name="logout" value="Logout">
-    </form>
+    <div class="game-list-intro">
+        <span>Welcome, {{ player.venmo_username }}!</span>
+        <form method="post" action="/logout">
+            <input type="submit" name="logout" value="Logout">
+        </form>
+    </div>
     {% if current_game %}
     <div class="info">
         You are currently in {{ current_game.lobby_name }}. <a href="/g/{{ current_game.id }}/">View the game</a>.
@@ -14,19 +27,22 @@
     <div>
         <h2>Active Games</h2>
         {% if active_games|length %}
-        <ul>
+
+        <div class="game-list">
             {% for game in active_games %}
-            <li><a href="/g/{{game.id }}/"><code>{{ game }}</code></a></li>
+            {{ game_list_item(game) }}
             {% endfor %}
-        </ul>
+        </div>
         {% else %}
         <p>There are currently no active games.</p>
         {% endif %}
     </div>
     {% if not current_game %}
-    <form method="get" action="/game/create/">
-        <input type="submit" value="Create Game">
-    </form>
+    <div class="game-list-create">
+        <form method="get" action="/game/create/">
+            <input type="submit" value="Create Game">
+        </form>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
