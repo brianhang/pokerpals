@@ -52,6 +52,29 @@ def fetch(game_id: int) -> Optional[Game]:
         )
 
 
+def fetch_many(game_ids: list[int], reverse=False) -> list[Game]:
+    games = []
+
+    with db.cursor.get() as cursor:
+        order = 'DESC' if reverse else 'ASC'
+        game_id_list = ','.join(['?'] * len(game_ids))
+        cursor.execute(
+            f'SELECT id, creator_id, created, lobby_name, buyin_cents, entry_code, is_active FROM games WHERE id IN ({game_id_list}) ORDER BY id {order}', game_ids)
+
+        for row in cursor:
+            games.append(Game(
+                id=row[0],
+                creator_id=row[1],
+                created=row[2],
+                lobby_name=row[3],
+                buyin_cents=row[4],
+                entry_code=row[5],
+                is_active=bool(row[6])
+            ))
+
+    return games
+
+
 def create(creator_id: str, lobby_name: str, buyin_cents: int, entry_code: str) -> Game:
     game_id = None
     ts = time.time()

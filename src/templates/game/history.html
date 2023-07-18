@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% from "game/list_item.html" import game_list_item %}
+
+{% block body %}
+<div class="container">
+    <div class="game-list-intro">
+        <a href="/">Back</a>
+    </div>
+    <div>
+        <h2>Recent Games</h2>
+        {% if recent_games|length %}
+        <div class="game-list">
+            {% for game in recent_games %}
+            {{ game_list_item(game) }}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>You have not played in any games.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

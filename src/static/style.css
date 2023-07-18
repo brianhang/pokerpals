@@ -30,10 +30,14 @@ h1, h2, h3 {
 
 body {
     font-family: Archivo;
-    font-size: 1.25rem;
+    font-size: 1.2em;
     padding: 0;
     background: #dbf1ff;
     line-height: 1.5;
+}
+
+ul {
+    list-style: square;
 }
 
 .secondary {
@@ -101,6 +105,12 @@ body {
     display: grid;
     grid-template-columns: max-content auto;
     gap: 0.5rem;
+}
+
+@media only screen and (max-width: 800px) {
+    .create-game-form {
+        grid-template-columns: auto;
+    }
 }
 
 .venmo-cta {
@@ -210,6 +220,12 @@ button:active, input[type=button]:active, input[type=submit]:active {
     font-size: 0.9rem;
 }
 
+.game-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
 .player-info ul {
     padding: 0;
     margin: 0;
@@ -223,4 +239,8 @@ button:active, input[type=button]:active, input[type=submit]:active {
 .game-list-create {
     display: grid;
     margin-top: 1rem;
+}
+
+.top-gap {
+    padding-top: 0.5rem;
 }

@@ -1,15 +1,6 @@
 {% extends "layout.html" %}
 
-{% macro game_list_item(game) %}
-<a class="game-list-item" href="/g/{{ game.id }}">
-    <div>
-        <h3>{{ game.lobby_name }}<span class="game-view-id secondary">#{{ game.id }}</span></h3>
-        <div class="game-info">
-            Buy In: ${{ game.buyin_text() }}
-        </div>
-    </div>
-</a>
-{% endmacro %}
+{% from "game/list_item.html" import game_list_item %}
 
 {% block body %}
 <div class="container">
@@ -42,6 +33,17 @@
         <form method="get" action="/game/create/">
             <input type="submit" value="Create Game">
         </form>
+    </div>
+    {% endif %}
+    {% if recent_games|length %}
+    <div>
+        <h2>Recent Games</h2>
+        <div class="game-list">
+            {% for game in recent_games %}
+            {{ game_list_item(game) }}
+            {% endfor %}
+            <a href="/history/">View All</a>
+        </div>
     </div>
     {% endif %}
 </div>

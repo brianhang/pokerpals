@@ -1,3 +1,13 @@
 {% macro game_list_item(game) %}
-<h2>{{ game.lobby_name }}<a href="/g/{{ game.id }}/" class="game-view-id secondary">#23</a></h2>
+<a class="game-list-item" href="/g/{{ game.id }}">
+    <div>
+        <h3>{{ game.lobby_name }}<span class="game-view-id secondary">#{{ game.id }}</span></h3>
+        <div class="game-info">
+            <ul>
+                <li>Buy In: ${{ game.buyin_text() }}</li>
+                <li title="{{ game.created }}">Created: {{ game.human_created_time() }}</li>
+            </ul>
+        </div>
+    </div>
+</a>
 {% endmacro %}

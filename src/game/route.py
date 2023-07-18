@@ -39,7 +39,24 @@ def handle_game_list(player: Player) -> Response:
     current_game = next(
         (game for game in active_games if player.active_game_id == game.id), None)
 
-    return render_template('game/list.html', player=player, active_games=active_games, current_game=current_game)
+    num_recent_games = 5
+    recent_game_ids = game_players.repository.fetch_recent_game_ids(
+        player.venmo_username,
+        limit=num_recent_games,
+    )
+    recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
+
+    return render_template('game/list.html', player=player, active_games=active_games, recent_games=recent_games, current_game=current_game)
+
+
+def handle_history(player: Player) -> Response:
+    recent_game_ids = game_players.repository.fetch_recent_game_ids(
+        player.venmo_username,
+        limit=None,
+    )
+    recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
+
+    return render_template('game/history.html', player=player, recent_games=recent_games)
 
 
 def handle_create_game_form(player: Player) -> Response:

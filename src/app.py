@@ -5,7 +5,7 @@ import db.app_connection
 from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
                         handle_cashout_form, handle_create_game,
                         handle_create_game_form, handle_end_game,
-                        handle_end_game_form, handle_game_list,
+                        handle_end_game_form, handle_game_list, handle_history,
                         handle_join_game, handle_join_game_form,
                         handle_view_game)
 from player.route import (fetch_player, handle_login, handle_login_page,
@@ -25,6 +25,14 @@ def home():
     with fetch_player() as player:
         if player:
             return handle_game_list(player)
+    return handle_login_page()
+
+
+@app.route('/history', strict_slashes=False)
+def history():
+    with fetch_player() as player:
+        if player:
+            return handle_history(player)
     return handle_login_page()
 
 

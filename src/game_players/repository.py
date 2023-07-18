@@ -43,6 +43,24 @@ def fetch_player(game_id: int, player_id: str) -> Optional[GamePlayer]:
         )
 
 
+def fetch_recent_game_ids(player_id: str, limit: Optional[int]) -> list[int]:
+    recent_game_ids = []
+
+    with db.cursor.get() as cursor:
+        if limit and limit > 0:
+            limit_clause = f'LIMIT {limit}'
+        else:
+            limit_clause = ''
+
+        cursor.execute(
+            f'SELECT game_id FROM game_players WHERE player_id = ? AND cashout_cents IS NOT NULL ORDER BY game_id ASC {limit_clause}', (player_id,))
+
+        for row in cursor:
+            recent_game_ids.append(row[0])
+
+    return recent_game_ids
+
+
 def add_player(game_id: int, player_id: str) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(

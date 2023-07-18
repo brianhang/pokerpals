@@ -15,3 +15,6 @@ class Game:
 
     def buyin_text(self) -> str:
         return cent_utils.to_string(self.buyin_cents)
+
+    def human_created_time(self) -> str:
+        return self.created.strftime("%B %d, %Y %I:%M %p")
