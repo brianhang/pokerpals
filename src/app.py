@@ -1,5 +1,6 @@
 from flask import Flask, redirect, url_for
 from flask_mobility import Mobility
+from flask_socketio import SocketIO
 
 import db.app_connection
 from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
@@ -12,6 +13,7 @@ from player.route import (fetch_player, handle_login, handle_login_page,
                           handle_logout)
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 Mobility(app)
 
 
@@ -48,7 +50,7 @@ def game_create_form():
 def game_create():
     with fetch_player() as player:
         if player:
-            return handle_create_game(player)
+            return handle_create_game(player, socketio=socketio)
     return redirect(url_for('home'))
 
 
@@ -64,7 +66,7 @@ def game_buyin_form():
 def game_buyin():
     with fetch_player() as player:
         if player:
-            return handle_buyin(player)
+            return handle_buyin(player, socketio=socketio)
     return redirect(url_for('home')), 403
 
 
@@ -80,7 +82,7 @@ def game_cashout_form():
 def game_cashout():
     with fetch_player() as player:
         if player:
-            return handle_cashout(player)
+            return handle_cashout(player, socketio=socketio)
     return redirect(url_for('home')), 403
 
 
@@ -105,7 +107,7 @@ def game_join(game_id):
     with fetch_player() as player:
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
-            return handle_join_game(player, game_id)
+            return handle_join_game(player, game_id, socketio=socketio)
     return redirect(url_for('home')), 403
 
 
@@ -123,7 +125,7 @@ def game_end(game_id):
     with fetch_player() as player:
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
-            return handle_end_game(player, game_id)
+            return handle_end_game(player, game_id, socketio=socketio)
     return redirect(url_for('home')), 403
 
 
@@ -138,4 +140,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    socketio.run(app, host='0.0.0.0', port=8080, debug=True)

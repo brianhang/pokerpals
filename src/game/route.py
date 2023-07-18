@@ -2,19 +2,24 @@ import math
 from random import choices
 from string import ascii_uppercase
 from typing import Optional
-from game_players.game_players import GamePlayer, GamePlayers
 
+from flask import Response, abort, redirect, render_template, request, url_for
+from flask_socketio import SocketIO
+
+import game.repository
 import game_players.repository
 import payment.repository
 import payout.settle
 import utils.cents as cents_utils
-from flask import Response, abort, redirect, render_template, request, url_for
+import utils.venmo.link
+from game_players.game_players import GamePlayer, GamePlayers
 from player.player import Player
 
-import game.repository
-import utils.venmo.link
-
 from .validation import get_end_game_err
+
+
+def broadcast_reload(socketio: SocketIO, game_id: Optional[int]) -> None:
+    socketio.emit('reload', str(game_id) if game_id else None)
 
 
 def generate_entry_code() -> str:
@@ -43,6 +48,7 @@ def handle_game_list(player: Player) -> Response:
     recent_game_ids = game_players.repository.fetch_recent_game_ids(
         player.venmo_username,
         limit=num_recent_games,
+        reverse=True,
     )
     recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
 
@@ -65,7 +71,7 @@ def handle_create_game_form(player: Player) -> Response:
     return render_template('game/create.html', lobby_name=lobby_name, entry_code=entry_code)
 
 
-def handle_create_game(player: Player) -> Response:
+def handle_create_game(player: Player, socketio: SocketIO) -> Response:
     active_game_id = player.active_game_id
     if active_game_id:
         return redirect(url_for('game_view', game_id=active_game_id))
@@ -95,6 +101,7 @@ def handle_create_game(player: Player) -> Response:
     new_game_id = new_game.id
     game_players.repository.add_player(new_game_id, player_id)
 
+    broadcast_reload(socketio, new_game_id)
     return redirect(url_for('game_view', game_id=new_game_id))
 
 
@@ -138,7 +145,7 @@ def handle_buyin_form(player: Player) -> Response:
     return render_template('game/buyin.html', buyin_prefill=buyin_prefill, game=active_game, player=player)
 
 
-def handle_buyin(player: Player) -> Response:
+def handle_buyin(player: Player, socketio: SocketIO) -> Response:
     game_id = player.active_game_id
     if not game_id:
         return redirect(url_for('home')), 400
@@ -158,6 +165,7 @@ def handle_buyin(player: Player) -> Response:
         return render_template('game/buyin.html', err=err, buyin_prefill=amount, game=active_game, player=player), 400
 
     game_players.repository.buy_in(game_id, player.venmo_username, cents)
+    broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id))
 
 
@@ -181,7 +189,7 @@ def handle_cashout_form(player: Player) -> Response:
     return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill=cashout_prefill, game=active_game, player=player)
 
 
-def handle_cashout(player: Player) -> Response:
+def handle_cashout(player: Player, socketio: SocketIO) -> Response:
     player_id = player.venmo_username
     game_id = player.active_game_id
     if not game_id:
@@ -211,6 +219,7 @@ def handle_cashout(player: Player) -> Response:
 
     game_players.repository.cash_out(game_id, player_id, cents)
     game_players.repository.remove_player(game_id, player_id)
+    broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id))
 
 
@@ -227,7 +236,7 @@ def handle_join_game_form(player: Player, game_id: int) -> Response:
     return render_template('game/join.html', game=req_game, player=player, entry_code_prefill=entry_code)
 
 
-def handle_join_game(player: Player, game_id: int) -> Response:
+def handle_join_game(player: Player, game_id: int, socketio: SocketIO) -> Response:
     active_game_id = player.active_game_id
     if active_game_id:
         return redirect(url_for('game_view', game_id=active_game_id)), 400
@@ -246,6 +255,7 @@ def handle_join_game(player: Player, game_id: int) -> Response:
         return render_template('game/join.html', err=err, entry_code_prefill=entry_code, game=req_game, player=player), 403
 
     game_players.repository.add_player(game_id, player.venmo_username)
+    broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id))
 
 
@@ -271,7 +281,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
     return render_template('game/end.html', player=player, game=req_game, warning=warning, err=err)
 
 
-def handle_end_game(player: Player, game_id: int) -> Response:
+def handle_end_game(player: Player, game_id: int, socketio: SocketIO) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
         return redirect(url_for('home')), 404
@@ -300,4 +310,5 @@ def handle_end_game(player: Player, game_id: int) -> Response:
     game_players.repository.remove_all_players(game_id)
     game.repository.set_active(game_id, False)
 
+    broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id))

@@ -16,7 +16,7 @@
             {% else %}
             <li>Spectating</li>
             {% endif %}
-            {% if player.cashout_cents %}
+            {% if player.cashout_cents is not none %}
             <li><strong>Cashed out</strong>: ${{ player.cashout_text() }}</li>
             {% endif %}
         </ul>

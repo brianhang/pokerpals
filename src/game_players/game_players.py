@@ -15,7 +15,7 @@ class GamePlayer:
         return cent_utils.to_string(self.buyin_cents)
 
     def cashout_text(self) -> Optional[str]:
-        if self.cashout_cents:
+        if self.cashout_cents is not None:
             return cent_utils.to_string(self.cashout_cents)
         return None
 
