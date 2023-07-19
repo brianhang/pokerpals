@@ -5,17 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('reload', (gameID) => {
     const path = window.location.pathname;
 
-    if (gameID == null) {
-      if (path != '/') {
-        return;
+    if (path === '/') {
+      if (gameID == null) {
+        window.location.reload();
       }
     } else {
       const curGameID = path.match(gameIDPattern);
-      if (curGameID != null && curGameID[1] !== gameID) {
-        return;
+      if (curGameID != null && curGameID[1] === gameID) {
+        window.location.reload();
       }
     }
-
-    location.reload();
   });
 });
