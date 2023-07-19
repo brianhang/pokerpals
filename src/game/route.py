@@ -101,7 +101,7 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
     new_game_id = new_game.id
     game_players.repository.add_player(new_game_id, player_id)
 
-    broadcast_reload(socketio, new_game_id)
+    broadcast_reload(socketio, None)
     return redirect(url_for('game_view', game_id=new_game_id), code=303)
 
 
