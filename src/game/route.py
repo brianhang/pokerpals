@@ -311,4 +311,5 @@ def handle_end_game(player: Player, game_id: int, socketio: SocketIO) -> Respons
     game.repository.set_active(game_id, False)
 
     broadcast_reload(socketio, game_id)
+    broadcast_reload(socketio, None)
     return redirect(url_for('game_view', game_id=game_id), code=303)
