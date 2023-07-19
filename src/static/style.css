@@ -150,6 +150,7 @@ input:focus {
     color: #fff;
     transition: transform 100ms ease, background-color 200ms ease;
     transform: none;
+    border-radius: 0;
 }
 
 button:hover, input[type=button]:hover, input[type=submit]:hover {
@@ -183,7 +184,7 @@ button:active, input[type=button]:active, input[type=submit]:active {
 .game-list-intro {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
 }
 
 .game-view-id {
