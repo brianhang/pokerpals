@@ -140,4 +140,8 @@ def logout():
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=8080, debug=True)
+    import os
+
+    debug = os.environ.get('APP_DEBUG') is not None
+    port = int(os.environ.get('APP_PORT') or 8080)
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
