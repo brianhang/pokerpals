@@ -1,11 +1,7 @@
-from functools import lru_cache
 import urllib.parse
+from functools import lru_cache
 
-# https://github.com/gevent/gevent/issues/941
-from gevent import monkey
-monkey.patch_socket()
-
-import requests  # nopep8
+import requests
 
 
 @lru_cache(256)

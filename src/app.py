@@ -1,3 +1,7 @@
+import gevent.monkey  # nopep8
+
+gevent.monkey.patch_all()  # nopep8
+
 from flask import Flask, redirect, url_for
 from flask_mobility import Mobility
 from flask_socketio import SocketIO
