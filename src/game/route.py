@@ -74,7 +74,7 @@ def handle_create_game_form(player: Player) -> Response:
 def handle_create_game(player: Player, socketio: SocketIO) -> Response:
     active_game_id = player.active_game_id
     if active_game_id:
-        return redirect(url_for('game_view', game_id=active_game_id))
+        return redirect(url_for('game_view', game_id=active_game_id), code=303)
 
     lobby_name = request.form.get('lobby-name', '').strip()
     buyin_cents = int(float(request.form.get('buy-in', '0.0')) * 100)
@@ -102,7 +102,7 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
     game_players.repository.add_player(new_game_id, player_id)
 
     broadcast_reload(socketio, new_game_id)
-    return redirect(url_for('game_view', game_id=new_game_id))
+    return redirect(url_for('game_view', game_id=new_game_id), code=303)
 
 
 def handle_view_game(player: Optional[Player], game_id: int) -> Response:
@@ -166,7 +166,7 @@ def handle_buyin(player: Player, socketio: SocketIO) -> Response:
 
     game_players.repository.buy_in(game_id, player.venmo_username, cents)
     broadcast_reload(socketio, game_id)
-    return redirect(url_for('game_view', game_id=game_id))
+    return redirect(url_for('game_view', game_id=game_id), code=303)
 
 
 def handle_cashout_form(player: Player) -> Response:
@@ -220,7 +220,7 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
     game_players.repository.cash_out(game_id, player_id, cents)
     game_players.repository.remove_player(game_id, player_id)
     broadcast_reload(socketio, game_id)
-    return redirect(url_for('game_view', game_id=game_id))
+    return redirect(url_for('game_view', game_id=game_id), code=303)
 
 
 def handle_join_game_form(player: Player, game_id: int) -> Response:
@@ -256,7 +256,7 @@ def handle_join_game(player: Player, game_id: int, socketio: SocketIO) -> Respon
 
     game_players.repository.add_player(game_id, player.venmo_username)
     broadcast_reload(socketio, game_id)
-    return redirect(url_for('game_view', game_id=game_id))
+    return redirect(url_for('game_view', game_id=game_id), code=303)
 
 
 def handle_end_game_form(player: Player, game_id: int) -> Response:
@@ -311,4 +311,4 @@ def handle_end_game(player: Player, game_id: int, socketio: SocketIO) -> Respons
     game.repository.set_active(game_id, False)
 
     broadcast_reload(socketio, game_id)
-    return redirect(url_for('game_view', game_id=game_id))
+    return redirect(url_for('game_view', game_id=game_id), code=303)
