@@ -244,6 +244,14 @@ def handle_join_game_form(player: Player, game_id: int) -> Response:
         return abort(404)
 
     entry_code = request.args.get('code', '')
+    game_player = game_players.repository.fetch_player(
+        game_id,
+        player.venmo_username,
+    )
+
+    if game_player and not entry_code:
+        entry_code = req_game.entry_code
+
     return render_template('game/join.html', game=req_game, player=player, entry_code_prefill=entry_code)
 
 
