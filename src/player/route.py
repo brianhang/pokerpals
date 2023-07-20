@@ -34,7 +34,7 @@ def handle_login() -> Response:
     venmo_username = request.form.get('venmo-username')
     return_endpoint = request.form.get('return-endpoint')
     return_game_id = request.form.get('return-game-id')
-    return_game_code = request.form.get('return-game-id')
+    return_game_code = request.form.get('return-game-code')
 
     if return_endpoint not in ALLOWED_ENDPOINTS:
         return_endpoint = None
