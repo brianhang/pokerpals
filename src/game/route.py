@@ -111,15 +111,26 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
         return abort(404)
 
     req_game_players = game_players.repository.fetch(game_id)
-    game_player = find_game_player(req_game_players, player.venmo_username)
+    game_player = find_game_player(
+        req_game_players, player.venmo_username
+    ) if player else None
     buyin_amount = cents_utils.to_string(req_game.buyin_cents)
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
     payments = payment.repository.fetch_for_game(game_id)
 
-    pending_payment = next((payment for payment in payments
-                           if payment.from_player_id == player.venmo_username and not payment.completed), None)
+    if player:
+        pending_payment = next(
+            (
+                payment for payment in payments
+                if payment.from_player_id == player.venmo_username and not payment.completed
+            ),
+            None
+        )
+    else:
+        pending_payment = None
+
     venmo_url = None
 
     if pending_payment:
@@ -135,11 +146,11 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
 def handle_buyin_form(player: Player) -> Response:
     game_id = player.active_game_id
     if not game_id:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game = game.repository.fetch(game_id)
     if not active_game:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     buyin_prefill = cents_utils.to_string(active_game.buyin_cents)
     return render_template('game/buyin.html', buyin_prefill=buyin_prefill, game=active_game, player=player)
@@ -148,11 +159,11 @@ def handle_buyin_form(player: Player) -> Response:
 def handle_buyin(player: Player, socketio: SocketIO) -> Response:
     game_id = player.active_game_id
     if not game_id:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game = game.repository.fetch(game_id)
     if not active_game:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     err = None
 
@@ -172,16 +183,16 @@ def handle_buyin(player: Player, socketio: SocketIO) -> Response:
 def handle_cashout_form(player: Player) -> Response:
     game_id = player.active_game_id
     if not game_id:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game = game.repository.fetch(game_id)
     if not active_game:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game_players = game_players.repository.fetch(game_id)
     game_player = find_game_player(active_game_players, player.venmo_username)
     if not game_player:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cashout_max = cents_utils.to_string(cashout_max_cents)
@@ -193,16 +204,16 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
     player_id = player.venmo_username
     game_id = player.active_game_id
     if not game_id:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game = game.repository.fetch(game_id)
     if not active_game:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     active_game_players = game_players.repository.fetch(game_id)
     game_player = find_game_player(active_game_players, player.venmo_username)
     if not game_player:
-        return redirect(url_for('home')), 400
+        return redirect(url_for('home'))
 
     err = None
     amount = float(request.form.get('amount', '0'))
@@ -239,7 +250,7 @@ def handle_join_game_form(player: Player, game_id: int) -> Response:
 def handle_join_game(player: Player, game_id: int, socketio: SocketIO) -> Response:
     active_game_id = player.active_game_id
     if active_game_id:
-        return redirect(url_for('game_view', game_id=active_game_id)), 400
+        return redirect(url_for('game_view', game_id=active_game_id))
 
     req_game = game.repository.fetch(game_id)
     if not req_game or not req_game.is_active:
@@ -262,7 +273,7 @@ def handle_join_game(player: Player, game_id: int, socketio: SocketIO) -> Respon
 def handle_end_game_form(player: Player, game_id: int) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
-        return redirect(url_for('home')), 404
+        return redirect(url_for('home'))
 
     if not req_game.is_active or req_game.creator_id != player.venmo_username:
         return redirect(url_for('game_view', game_id=game_id)), abort(403)
@@ -284,7 +295,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
 def handle_end_game(player: Player, game_id: int, socketio: SocketIO) -> Response:
     req_game = game.repository.fetch(game_id)
     if not req_game:
-        return redirect(url_for('home')), 404
+        return redirect(url_for('home'))
 
     if not req_game.is_active:
         return redirect(url_for('game_view', game_id=game_id)), abort(400)

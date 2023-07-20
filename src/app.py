@@ -63,7 +63,7 @@ def game_buyin_form():
     with fetch_player() as player:
         if player:
             return handle_buyin_form(player)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.post('/game/buyin', strict_slashes=False)
@@ -71,7 +71,7 @@ def game_buyin():
     with fetch_player() as player:
         if player:
             return handle_buyin(player, socketio=socketio)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.route('/game/cashout', strict_slashes=False)
@@ -79,7 +79,7 @@ def game_cashout_form():
     with fetch_player() as player:
         if player:
             return handle_cashout_form(player)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.post('/game/cashout', strict_slashes=False)
@@ -87,7 +87,7 @@ def game_cashout():
     with fetch_player() as player:
         if player:
             return handle_cashout(player, socketio=socketio)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.route('/g/<game_id>', strict_slashes=False)
@@ -103,7 +103,7 @@ def game_join_form(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_join_game_form(player, game_id)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.post('/game/join/<game_id>', strict_slashes=False)
@@ -112,7 +112,7 @@ def game_join(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_join_game(player, game_id, socketio=socketio)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.route('/game/end/<game_id>', strict_slashes=False)
@@ -121,7 +121,7 @@ def game_end_form(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_end_game_form(player, game_id)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.post('/game/end/<game_id>', strict_slashes=False)
@@ -130,7 +130,7 @@ def game_end(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_end_game(player, game_id, socketio=socketio)
-    return redirect(url_for('home')), 403
+    return redirect(url_for('home'))
 
 
 @app.post('/login', strict_slashes=False)
