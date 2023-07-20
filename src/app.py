@@ -2,7 +2,7 @@ import gevent.monkey  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
 
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request
 from flask_mobility import Mobility
 from flask_socketio import SocketIO
 
@@ -39,7 +39,7 @@ def history():
     with fetch_player() as player:
         if player:
             return handle_history(player)
-    return handle_login_page()
+    return handle_login_page(return_endpoint='history')
 
 
 @app.route('/game/create', strict_slashes=False)
@@ -103,7 +103,9 @@ def game_join_form(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_join_game_form(player, game_id)
-    return redirect(url_for('home'))
+
+    entry_code = request.args.get('code', '')
+    return handle_login_page(return_endpoint='game_join_form', return_game_id=game_id, return_game_code=entry_code)
 
 
 @app.post('/game/join/<game_id>', strict_slashes=False)
@@ -131,6 +133,14 @@ def game_end(game_id):
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_end_game(player, game_id, socketio=socketio)
     return redirect(url_for('home'))
+
+
+@app.route('/login', strict_slashes=False)
+def login_page():
+    with fetch_player() as player:
+        if player:
+            return redirect(url_for('home'))
+    return handle_login_page()
 
 
 @app.post('/login', strict_slashes=False)

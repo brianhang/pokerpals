@@ -29,7 +29,7 @@
     {% if game.is_active%}
         {% if not player %}
             <div class="info">
-                Please <a href="/">login</a> to participate in the game.
+                Please <a href="/login?return=game_view&return_game_id={{ game.id }}">login</a> to participate in the game.
             </div>
         {% endif %}
     {% else %}

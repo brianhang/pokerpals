@@ -7,6 +7,7 @@ from . import repository as player_repository
 from utils.venmo.username import is_valid_venmo_username
 
 VENMO_USERNAME_COOKIE = 'venmo_username'
+ALLOWED_ENDPOINTS = ['home', 'game_view', 'history', 'game_join_form']
 
 
 def get_venmo_username() -> Optional[str]:
@@ -20,16 +21,23 @@ def fetch_player() -> Optional[Player]:
     yield player
 
 
-def handle_login_page() -> str:
+def handle_login_page(return_endpoint='', return_game_id=None, return_game_code='') -> str:
     last_username = request.args.get('last_username', '').strip()
-    if last_username and len(last_username) > 0:
-        return render_template('login.html', last_username=last_username)
-
-    return render_template('login.html')
+    return_endpoint = request.args.get('return', return_endpoint).strip()
+    return_game_id = request.args.get('return_game_id', return_game_id)
+    return_game_code = request.args.get(
+        'return_game_code', return_game_code).strip()
+    return render_template('login.html', last_username=last_username, return_endpoint=return_endpoint, return_game_id=return_game_id, return_game_code=return_game_code)
 
 
 def handle_login() -> Response:
     venmo_username = request.form.get('venmo-username')
+    return_endpoint = request.form.get('return-endpoint')
+    return_game_id = request.form.get('return-game-id')
+    return_game_code = request.form.get('return-game-id')
+
+    if return_endpoint not in ALLOWED_ENDPOINTS:
+        return_endpoint = None
 
     player = player_repository.fetch(venmo_username)
 
@@ -39,11 +47,18 @@ def handle_login() -> Response:
         )
 
     if player:
-        response = make_response(redirect('/'))
+        params = {}
+        if return_game_id and return_game_id.isdigit():
+            params['game_id'] = int(return_game_id)
+        if return_game_code:
+            params['code'] = return_game_code
+
+        response = make_response(
+            redirect(url_for(return_endpoint or 'home', **params)))
         response.set_cookie(VENMO_USERNAME_COOKIE, venmo_username)
     else:
-        response = make_response(
-            redirect(url_for('home', last_username=venmo_username)))
+        response = redirect(url_for('login_page', last_username=venmo_username, return_endpoint=return_endpoint,
+                            return_game_id=return_game_id, return_game_code=return_game_code))
 
     return response
 

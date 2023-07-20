@@ -1,12 +1,21 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-    {% if last_username is defined %}
+    {% if last_username %}
     <div class="error">
         The Venmo username is not valid, please try another username.
     </div>
     {% endif %}
     <form class="form" action="/login" method="post">
+        {% if return_endpoint %}
+        <input type="hidden" name="return-endpoint" value="{{ return_endpoint }}">
+        {% endif %}
+        {% if return_game_id %}
+        <input type="hidden" name="return-game-id" value="{{ return_game_id }}">
+        {% endif %}
+        {% if return_game_code %}
+        <input type="hidden" name="return-game-code" value="{{ return_game_code }}">
+        {% endif %}
         <label for="venmo-username">Please enter your Venmo username:</label>
         <input autofocus type="text" id="venmo-username" name="venmo-username" value="{{ last_username }}" required>
         <input type="submit" value="Login">

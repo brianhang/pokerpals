@@ -132,6 +132,7 @@ input {
     border: 1px solid var(--shadow-color);
     padding: 0.5rem;
     outline: none;
+    border-radius: 0;
 }
 
 input:focus {
@@ -244,4 +245,8 @@ button:active, input[type=button]:active, input[type=submit]:active {
 
 .top-gap {
     padding-top: 0.5rem;
+}
+
+.game-title {
+    margin-top: 0;
 }
