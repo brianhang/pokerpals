@@ -8,7 +8,7 @@ from flask_socketio import SocketIO
 
 import game.repository
 import game_players.repository as game_players_repository
-import payment.repository
+import payment.repository as payment_repository
 import payout.settle
 import utils.cents as cents_utils
 import utils.venmo.link
@@ -118,29 +118,24 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
-    payments = payment.repository.fetch_for_game(game_id)
+    payments = payment_repository.fetch_for_game(game_id)
+
+    payment_and_urls = []
 
     if player:
-        pending_payment = next(
-            (
-                payment for payment in payments
-                if payment.from_player_id == player.venmo_username and not payment.completed
-            ),
-            None
-        )
-    else:
-        pending_payment = None
+        for payment in payments:
+            if payment.from_player_id != player.venmo_username or payment.completed:
+                continue
 
-    venmo_url = None
+            venmo_url = utils.venmo.link.get_payment_url(
+                venmo_username=payment.to_player_id,
+                txn=utils.venmo.link.Transaction.PAY,
+                amount_cents=payment.cents,
+                is_mobile=request.MOBILE,
+            )
+            payment_and_urls.append((payment, venmo_url))
 
-    if pending_payment:
-        venmo_url = utils.venmo.link.get_payment_url(
-            venmo_username=pending_payment.to_player_id,
-            txn=utils.venmo.link.Transaction.PAY,
-            amount_cents=pending_payment.cents,
-            is_mobile=request.MOBILE)
-
-    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments, venmo_url=venmo_url, pending_payment=pending_payment, buyin_amount=buyin_amount)
+    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments, payment_and_urls=payment_and_urls, buyin_amount=buyin_amount)
 
 
 def handle_buyin_form(player: Player) -> Response:
@@ -319,7 +314,7 @@ def create_payments_and_end_game(game_players: GamePlayers, socketio: SocketIO) 
     transactions = payout.settle.get_transactions(game_players.players)
 
     for transaction in transactions:
-        payment.repository.create(
+        payment_repository.create(
             game_id=game_id,
             from_player_id=transaction.sender_id,
             to_player_id=transaction.receiver_id,

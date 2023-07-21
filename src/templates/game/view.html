@@ -37,11 +37,15 @@
             This game has ended.
         </div>
     {% endif %}
-    {% if venmo_url and pending_payment %}
-        <div class="venmo-cta">
-            <a href="{{ venmo_url }}">Venmo {{ pending_payment.to_player_id }}</a>
-        </div>
-    {% endif %}
+    <div>
+    {% for payment, venmo_url in payment_and_urls %}
+        <a class="venmo-cta-link" href="{{ venmo_url }}">
+            <div class="venmo-cta">
+                Send ${{ payment.amount_text() }} to {{ payment.to_player_id }}
+            </div>
+        </a>
+    {% endfor %}
+    </div>
     <div>
         {{ game_title(game) }}
         <div class="secondary"><em>Created by <a href="https://venmo.com/{{ game.creator_id }}/">{{ game.creator_id

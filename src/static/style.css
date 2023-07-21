@@ -115,16 +115,16 @@ ul {
 
 .venmo-cta {
     text-align: center;
-    padding: 2rem;
-}
-
-.venmo-cta a {
+    margin-bottom: 1rem;
     background-color: #009cde;
     color: #fff;
     padding: 1rem;
-    text-decoration: none;
     outline: 1px solid var(--shadow-color);
     box-shadow: 4px 4px var(--shadow-color);
+}
+
+.venmo-cta-link {
+    text-decoration: none;
 }
 
 input {
