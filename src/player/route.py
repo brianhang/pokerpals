@@ -33,7 +33,9 @@ def handle_login_page(return_endpoint='', return_game_id=None, return_game_code=
 
 
 def handle_login() -> Response:
-    venmo_username = request.form.get('venmo-username')
+    venmo_username = request.form.get('venmo-username', '') \
+        .strip() \
+        .removeprefix('@')
     return_endpoint = request.form.get('return-endpoint')
     return_game_id = request.form.get('return-game-id')
     return_game_code = request.form.get('return-game-code')
