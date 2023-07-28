@@ -245,8 +245,11 @@ def handle_join_game_form(player: Player, game_id: int) -> Response:
         return redirect(url_for('game_view', game_id=active_game_id))
 
     req_game = game.repository.fetch(game_id)
-    if not req_game or not req_game.is_active:
+    if not req_game:
         return abort(404)
+
+    if not req_game.is_active:
+        return redirect(url_for('game_view', game_id=game_id), code=303)
 
     entry_code = request.args.get('code', '')
     game_player = game_players_repository.fetch_player(
@@ -266,8 +269,11 @@ def handle_join_game(player: Player, game_id: int, socketio: SocketIO) -> Respon
         return redirect(url_for('game_view', game_id=active_game_id))
 
     req_game = game.repository.fetch(game_id)
-    if not req_game or not req_game.is_active:
+    if not req_game:
         return abort(404)
+
+    if not req_game.is_active:
+        return redirect(url_for('game_view', game_id=game_id), code=303)
 
     err = None
     entry_code = request.form.get('entry-code')
