@@ -1,4 +1,6 @@
-import gevent.monkey  # nopep8
+import gevent.monkey
+
+from game.qr_code import handle_game_join_qr_code  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
 
@@ -133,6 +135,15 @@ def game_end(game_id):
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_end_game(player, game_id, socketio=socketio)
     return redirect(url_for('home'))
+
+
+@app.route('/game/qrcode/<game_id>', strict_slashes=False)
+def game_qr_code(game_id):
+    entry_code = request.args.get('code')
+    if entry_code and len(entry_code.strip()) < 1:
+        entry_code = None
+
+    return handle_game_join_qr_code(game_id, entry_code)
 
 
 @app.route('/login', strict_slashes=False)

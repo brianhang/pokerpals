@@ -251,3 +251,15 @@ button:active, input[type=button]:active, input[type=submit]:active {
 .game-title {
     margin-top: 0;
 }
+
+.game-qr-code {
+    text-align: center;
+}
+
+.game-qr-code img {
+    max-width: 8rem;
+}
+
+.game-header-items {
+    margin: 0;
+}
