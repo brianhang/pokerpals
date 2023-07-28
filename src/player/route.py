@@ -64,8 +64,8 @@ def handle_login() -> Response:
         response.set_cookie(VENMO_USERNAME_COOKIE,
                             venmo_username, expires=expires)
     else:
-        response = redirect(url_for('login_page', last_username=venmo_username, return_endpoint=return_endpoint,
-                            return_game_id=return_game_id, return_game_code=return_game_code))
+        response = render_template('login.html', last_username=venmo_username, return_endpoint=return_endpoint,
+                                   return_game_id=return_game_id, return_game_code=return_game_code)
 
     return response
 
