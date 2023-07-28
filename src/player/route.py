@@ -6,6 +6,8 @@ from player.player import Player
 from . import repository as player_repository
 from utils.venmo.username import is_valid_venmo_username
 
+import datetime
+
 VENMO_USERNAME_COOKIE = 'venmo_username'
 ALLOWED_ENDPOINTS = ['home', 'game_view', 'history', 'game_join_form']
 
@@ -53,9 +55,12 @@ def handle_login() -> Response:
         if return_game_code:
             params['code'] = return_game_code
 
+        expires = datetime.datetime.now() + datetime.timedelta(days=365)
+
         response = make_response(
             redirect(url_for(return_endpoint or 'home', **params)))
-        response.set_cookie(VENMO_USERNAME_COOKIE, venmo_username)
+        response.set_cookie(VENMO_USERNAME_COOKIE,
+                            venmo_username, expires=expires)
     else:
         response = redirect(url_for('login_page', last_username=venmo_username, return_endpoint=return_endpoint,
                             return_game_id=return_game_id, return_game_code=return_game_code))
