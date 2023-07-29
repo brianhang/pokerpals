@@ -21,7 +21,7 @@ def fetch(venmo_username: str) -> Optional[Player]:
 def create(venmo_username: str) -> Player:
     with db.cursor.get() as cursor:
         cursor.execute(
-            "INSERT INTO players (venmo_username) VALUES (?)", (venmo_username,))
+            "INSERT OR IGNORE INTO players (venmo_username) VALUES (?)", (venmo_username,))
     return Player(
         venmo_username=venmo_username
     )
