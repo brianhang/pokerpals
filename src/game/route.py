@@ -26,6 +26,19 @@ def generate_entry_code() -> str:
     return ''.join(choices(ascii_uppercase, k=4))
 
 
+def get_optional_cents_form_param(name: str) -> Optional[int]:
+    try:
+        amount = float(request.form.get(name))
+        return math.ceil(amount * 100)
+    except ValueError:
+        return None
+
+
+def get_cents_form_param(name: str, default: int = 0) -> int:
+    cents = get_optional_cents_form_param(name)
+    return default if cents is None else cents
+
+
 def get_max_cashout_cents(cur_game_players: GamePlayers, cur_game_player: GamePlayer) -> int:
     game_remaining_cents = cur_game_players.total_buyin_cents() \
         - cur_game_players.total_cashout_cents() \
@@ -77,7 +90,7 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
         return redirect(url_for('game_view', game_id=active_game_id), code=303)
 
     lobby_name = request.form.get('lobby-name', '').strip()
-    buyin_cents = int(float(request.form.get('buy-in', '0.0')) * 100)
+    buyin_cents = get_cents_form_param('buy-in')
     entry_code = request.form.get('entry-code', '').strip()
     err = None
 
@@ -162,13 +175,13 @@ def handle_buyin(player: Player, socketio: SocketIO) -> Response:
 
     err = None
 
-    amount = float(request.form.get('amount', '0'))
-    cents = math.ceil(amount * 100)
+    cents = get_cents_form_param('amount')
+    buyin_prefill = cents_utils.to_string(cents)
     if cents <= 0:
         err = 'Please provide a valid amount to buy in'
 
     if err:
-        return render_template('game/buyin.html', err=err, buyin_prefill=amount, game=active_game, player=player), 400
+        return render_template('game/buyin.html', err=err, buyin_prefill=buyin_prefill, game=active_game, player=player), 400
 
     game_players_repository.buy_in(game_id, player.venmo_username, cents)
     broadcast_reload(socketio, game_id)
@@ -191,7 +204,12 @@ def handle_cashout_form(player: Player) -> Response:
 
     cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cashout_max = cents_utils.to_string(cashout_max_cents)
-    cashout_prefill = cents_utils.to_string(game_player.cashout_cents or 0)
+
+    if game_player.cashout_cents:
+        cashout_prefill = cents_utils.to_string(game_player.cashout_cents)
+    else:
+        cashout_prefill = ""
+
     return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill=cashout_prefill, game=active_game, player=player)
 
 
@@ -211,9 +229,9 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
         return redirect(url_for('home'))
 
     err = None
-    amount = float(request.form.get('amount', '0'))
     cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
-    cents = math.ceil(amount * 100)
+    cents = get_cents_form_param('amount')
+    cashout_prefill = cents_utils.to_string(cents)
 
     if cents > cashout_max_cents:
         err = f'You can only cash out at most {cents_utils.to_string(cashout_max_cents)}'
@@ -221,7 +239,7 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
         err = 'Please provide a valid amount to cash out'
 
     if err:
-        return render_template('game/cashout.html', err=err, cashout_prefill=amount, game=active_game, player=player), 400
+        return render_template('game/cashout.html', err=err, cashout_prefill=cashout_prefill, game=active_game, player=player), 400
 
     game_players_repository.cash_out(game_id, player_id, cents)
     game_players_repository.remove_player(game_id, player_id)
@@ -346,4 +364,54 @@ def handle_end_game(player: Player, game_id: int, socketio: SocketIO) -> Respons
 
     req_game_players = game_players_repository.fetch(game_id)
     create_payments_and_end_game(req_game_players, socketio=socketio)
+    return redirect(url_for('game_view', game_id=game_id), code=303)
+
+
+def handle_edit_player_form(player: Player, game_id: int, target_player_id: str) -> Response:
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
+        return redirect(url_for('home'))
+
+    if not req_game.is_active:
+        return redirect(url_for('game_view', game_id=game_id)), abort(400)
+    if req_game.creator_id != player.venmo_username:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
+
+    target_player = game_players_repository.fetch_player(
+        game_id, target_player_id)
+    if not target_player:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
+
+    buyin_prefill = cents_utils.to_string(
+        target_player.buyin_cents) if target_player.buyin_cents is not None else None
+    cashout_prefill = cents_utils.to_string(
+        target_player.cashout_cents) if target_player.cashout_cents is not None else None
+
+    return render_template('game/edit_player.html', player=player, target_player=target_player, game=req_game, buyin_prefill=buyin_prefill, cashout_prefill=cashout_prefill)
+
+
+def handle_edit_player(player: Player, game_id: int, target_player_id: str, socketio: SocketIO) -> Response:
+    req_game = game.repository.fetch(game_id)
+    if not req_game:
+        return redirect(url_for('home'))
+
+    if not req_game.is_active:
+        return redirect(url_for('game_view', game_id=game_id)), abort(400)
+    if req_game.creator_id != player.venmo_username:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
+
+    target_player = game_players_repository.fetch_player(
+        game_id, target_player_id)
+    if not target_player:
+        return redirect(url_for('game_view', game_id=game_id)), abort(403)
+
+    new_buyin_cents = get_optional_cents_form_param('buyin')
+    if new_buyin_cents is not None:
+        game_players_repository.buy_in(
+            game_id, target_player_id, new_buyin_cents, override=True)
+
+    new_cash_out = get_optional_cents_form_param('cashout')
+    game_players_repository.cash_out(game_id, target_player_id, new_cash_out)
+
+    broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id), code=303)

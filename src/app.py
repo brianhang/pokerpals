@@ -4,14 +4,15 @@ from game.qr_code import handle_game_join_qr_code  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
 
-from flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, request, url_for
 from flask_mobility import Mobility
 from flask_socketio import SocketIO
 
 import db.app_connection
 from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
                         handle_cashout_form, handle_create_game,
-                        handle_create_game_form, handle_end_game,
+                        handle_create_game_form, handle_edit_player,
+                        handle_edit_player_form, handle_end_game,
                         handle_end_game_form, handle_game_list, handle_history,
                         handle_join_game, handle_join_game_form,
                         handle_view_game)
@@ -134,6 +135,24 @@ def game_end(game_id):
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
             return handle_end_game(player, game_id, socketio=socketio)
+    return redirect(url_for('home'))
+
+
+@app.route('/game/edit/<game_id>/<target_player_id>', strict_slashes=False)
+def game_edit_player_form(game_id, target_player_id):
+    with fetch_player() as player:
+        if player:
+            game_id = int(game_id) if game_id.isdigit() else 0
+            return handle_edit_player_form(player, game_id, target_player_id)
+    return redirect(url_for('home'))
+
+
+@app.post('/game/edit/<game_id>/<target_player_id>', strict_slashes=False)
+def game_edit_player(game_id, target_player_id):
+    with fetch_player() as player:
+        if player:
+            game_id = int(game_id) if game_id.isdigit() else 0
+            return handle_edit_player(player, game_id, target_player_id, socketio=socketio)
     return redirect(url_for('home'))
 
 

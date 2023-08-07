@@ -2,7 +2,7 @@
 {% from "game/title.html" import game_title %}
 
 
-{% macro player_item(player) %}
+{% macro player_item(game, viewing_player, player) %}
 <div class="player-item">
     <h3>
         <a href="https://www.venmo.com/{{ player.player_venmo_username }}/">
@@ -21,6 +21,11 @@
             {% endif %}
         </ul>
     </div>
+    {% if game.is_active and game.creator_id == viewing_player.venmo_username %}
+    <div class="player-edit">
+        <a href="/game/edit/{{ game.id }}/{{ player.player_venmo_username }}">Edit</a>
+    </div>
+    {% endif %}
 </div>
 {% endmacro %}
 
@@ -95,8 +100,8 @@
     <div>
         <h3>Players</h3>
         <div class="player-list">
-            {% for player in players.players %}
-                {{ player_item(player) }}
+            {% for cur_player in players.players %}
+                {{ player_item(game, player, cur_player) }}
             {% endfor %}
         </div>
     </div>

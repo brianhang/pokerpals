@@ -101,14 +101,14 @@ ul {
     color: #000;
 }
 
-.create-game-form {
+.grid-game-form {
     display: grid;
     grid-template-columns: max-content auto;
     gap: 0.5rem;
 }
 
 @media only screen and (max-width: 800px) {
-    .create-game-form {
+    .grid-game-form {
         grid-template-columns: auto;
     }
 }
@@ -262,4 +262,8 @@ button:active, input[type=button]:active, input[type=submit]:active {
 
 .game-header-items {
     margin: 0;
+}
+
+.player-edit a {
+    font-size: 0.9rem;
 }

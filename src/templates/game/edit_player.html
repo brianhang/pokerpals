@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% from "game/title.html" import game_title %}
+{% block body %}
+<div class="container">
+    {{ game_title(game) }}
+    <div>
+        <div>You are editing the details for {{ target_player.player_venmo_username }}:</div>
+        <form class="form top-gap" action="/game/edit/{{ game.id }}/{{ target_player.player_venmo_username }}"
+            method="post">
+            <div class="grid-game-form">
+                <label for="buy-in">Buy In:</label>
+                <input type="number" inputmode="decimal" id="buyin" name="buyin" min="0.01" step="0.01"
+                    value="{{ buyin_prefill }}">
+                <label for="cashout">Cash Out:</label>
+                <input type="number" inputmode="decimal" id="cashout" name="cashout" min="0.00" step="0.01"
+                    value="{{ cashout_prefill }}">
+            </div>
+            <div class="form-buttons">
+                <input type="submit" value="Save">
+                <a class="cancel-btn" href="/g/{{ game.id }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

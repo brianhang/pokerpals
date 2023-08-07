@@ -83,18 +83,22 @@ def remove_all_players(game_id):
             'UPDATE players SET active_game_id = NULL WHERE active_game_id = ?', (game_id,))
 
 
-def buy_in(game_id: str, player_id: str, cents: int) -> None:
+def buy_in(game_id: str, player_id: str, cents: int, override: bool = False) -> None:
     with db.cursor.get() as cursor:
-        cursor.execute(
-            'SELECT buyin_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))
-        res = cursor.fetchone()
-        current_buyin_cents = res[0] if res else None
+        if override:
+            new_buyin_cents = cents
+        else:
+            cursor.execute(
+                'SELECT buyin_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))
+            res = cursor.fetchone()
+            current_buyin_cents = res[0] if res else None
 
-        if current_buyin_cents is None:
-            raise Exception(
-                f"Player {player_id} has not joined game {game_id}")
+            if current_buyin_cents is None:
+                raise Exception(
+                    f"Player {player_id} has not joined game {game_id}")
 
-        new_buyin_cents = current_buyin_cents + cents
+            new_buyin_cents = current_buyin_cents + cents
+
         cursor.execute('UPDATE game_players SET buyin_cents = ? WHERE game_id = ? AND player_id = ?',
                        (new_buyin_cents, game_id, player_id,))
 
