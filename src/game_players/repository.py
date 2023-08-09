@@ -55,7 +55,7 @@ def fetch_recent_game_ids(player_id: str, limit: Optional[int], reverse: bool = 
             limit_clause = ''
 
         cursor.execute(
-            f'SELECT game_id FROM game_players WHERE player_id = ? AND cashout_cents IS NOT NULL ORDER BY game_id {order} {limit_clause}', (player_id,))
+            f'SELECT game_id FROM game_players WHERE player_id = ? AND buyin_cents IS NOT NULL ORDER BY game_id {order} {limit_clause}', (player_id,))
 
         for row in cursor:
             recent_game_ids.append(row[0])
