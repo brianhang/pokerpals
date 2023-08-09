@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% from "game/list_item.html" import game_list_item %}
+{% from "game/venmo_link.html" import venmo_link %}
 
 {% block body %}
 <div class="container">
@@ -13,6 +14,14 @@
     {% if current_game %}
     <div class="info">
         You are currently in {{ current_game.lobby_name }}. <a href="/g/{{ current_game.id }}/">View the game</a>.
+    </div>
+    {% endif %}
+    {% if payment_and_urls|length %}
+    <div>
+        <h2>Pending Payments</h2>
+        {% for payment, venmo_url in payment_and_urls %}
+        {{ venmo_link(payment, venmo_url, None) }}
+        {% endfor %}
     </div>
     {% endif %}
     <div>

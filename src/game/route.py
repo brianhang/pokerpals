@@ -66,8 +66,20 @@ def handle_game_list(player: Player) -> Response:
         reverse=True,
     )
     recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
+    payments = payment_repository.fetch_for_player(player.venmo_username)
+    payment_and_urls = []
 
-    return render_template('game/list.html', player=player, active_games=active_games, recent_games=recent_games, current_game=current_game)
+    for payment in payments:
+        venmo_url = utils.venmo.link.get_payment_url(
+            venmo_username=payment.to_player_id,
+            txn=utils.venmo.link.Transaction.PAY,
+            amount_cents=payment.cents,
+            is_mobile=request.MOBILE,
+            note=choice(VENMO_NOTES),
+        )
+        payment_and_urls.append((payment, venmo_url))
+
+    return render_template('game/list.html', player=player, active_games=active_games, recent_games=recent_games, current_game=current_game, payment_and_urls=payment_and_urls)
 
 
 def handle_history(player: Player) -> Response:
