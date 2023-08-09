@@ -1,5 +1,5 @@
 import math
-from random import choices
+from random import choice, choices
 from string import ascii_uppercase
 from typing import Optional
 
@@ -16,6 +16,8 @@ from game_players.game_players import GamePlayer, GamePlayers
 from player.player import Player
 
 from .validation import get_end_game_err
+
+VENMO_NOTES = ['P', '♠️', '♦️', '♣️', '❤️', '🅿️']
 
 
 def broadcast_reload(socketio: SocketIO, game_id: Optional[int]) -> None:
@@ -145,6 +147,7 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
                 txn=utils.venmo.link.Transaction.PAY,
                 amount_cents=payment.cents,
                 is_mobile=request.MOBILE,
+                note=choice(VENMO_NOTES),
             )
             payment_and_urls.append((payment, venmo_url))
 
