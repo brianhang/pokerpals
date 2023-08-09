@@ -111,6 +111,12 @@ ul {
     .grid-game-form {
         grid-template-columns: auto;
     }
+
+    .form-buttons {
+        display: grid;
+        text-align: center;
+        line-height: 1;
+    }
 }
 
 .venmo-cta {
