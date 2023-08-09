@@ -1,0 +1,18 @@
+{% macro venmo_link(payment, venmo_url, return_game) %}
+<div class="venmo-cta">
+    <div class="venmo-cta-text">Send ${{ payment.amount_text() }} to {{ payment.to_player_id }}</div>
+    <div class="venmo-cta-buttons">
+        <a class="venmo-cta-link" href="{{ venmo_url }}">
+            <div>
+                Venmo
+            </div>
+        </a>
+        <form class="form" action="/payment/dismiss/{{ payment.id }}" method="post">
+            {% if return_game %}
+            <input type="hidden" name="return-game" value="{{ return_game }}">
+            {% endif %}
+            <input class="cancel-btn" type="submit" value="Dismiss" />
+        </form>
+    </div>
+</div>
+{% endmacro %}

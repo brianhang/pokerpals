@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% from "game/title.html" import game_title %}
+{% from "game/venmo_link.html" import venmo_link %}
 
 
 {% macro player_item(game, viewing_player, player) %}
@@ -44,11 +45,7 @@
     {% endif %}
     <div>
     {% for payment, venmo_url in payment_and_urls %}
-        <a class="venmo-cta-link" href="{{ venmo_url }}">
-            <div class="venmo-cta">
-                Send ${{ payment.amount_text() }} to {{ payment.to_player_id }}
-            </div>
-        </a>
+        {{ venmo_link(payment, venmo_url, game.id) }}
     {% endfor %}
     </div>
     <div>

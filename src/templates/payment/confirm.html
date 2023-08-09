@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <div>
+        Are you sure you want to dismiss your payment of ${{ payment.amount_text() }} to {{ payment.to_player_id }}?
+    </div>
+    <form class="form" action="/payment/dismiss/{{ payment.id }}" method="post">
+        <div class="form-buttons">
+            <input type="hidden" name="return-game" value="{{ game_id }}">
+            <input type="hidden" name="confirmed" value="1">
+            <input autofocus type="submit" value="Dismiss Payment">
+            <a class="cancel-btn" href="{{ return_url }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
