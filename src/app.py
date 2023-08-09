@@ -1,6 +1,7 @@
 import gevent.monkey
 
-from game.qr_code import handle_game_join_qr_code  # nopep8
+from game.qr_code import handle_game_join_qr_code
+from payment.route import handle_payment_dismiss  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
 
@@ -181,6 +182,15 @@ def login():
 @app.post('/logout')
 def logout():
     return handle_logout()
+
+
+@app.post('/payment/dismiss/<payment_id>', strict_slashes=False)
+def payment_dismiss(payment_id):
+    with fetch_player() as player:
+        if player:
+            payment_id = int(payment_id) if payment_id.isdigit() else 0
+            return handle_payment_dismiss(player, payment_id)
+    return handle_login_page()
 
 
 if __name__ == '__main__':
