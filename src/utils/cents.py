@@ -1,5 +1,5 @@
-DOLLAR_TO_CENTS = 100.0
 
-
-def to_string(cents: int) -> str:
-    return '{:.2f}'.format(cents / DOLLAR_TO_CENTS)
+def to_string(tot_cents: int) -> str:
+    dollars = tot_cents // 100
+    cents = tot_cents % 100
+    return '{}.{:0>2}'.format(dollars, cents)
