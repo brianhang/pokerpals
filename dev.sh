@@ -16,6 +16,8 @@ source "$venv_dir/bin/activate"
 echo "📦 Installing requirements..."
 pip install -r requirements.txt
 
+cd src/
+
 # Create the database if it does not exist yet
 if [ ! -e "database.db" ]; then
     echo "Database file not found. Creating the database..."
@@ -24,7 +26,6 @@ if [ ! -e "database.db" ]; then
     set +x
 fi
 
-cd src/
 
 echo ""
 echo "✨ Starting the application at http://localhost:3000"
