@@ -65,3 +65,6 @@ class TestCents(unittest.TestCase):
 
         c = from_string("0.-2")
         self.assertEqual(c, None)
+
+        c = from_string("0.100")
+        self.assertEqual(c, None)

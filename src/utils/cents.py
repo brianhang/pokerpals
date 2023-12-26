@@ -12,7 +12,7 @@ def from_string(s :str) -> Optional[int]:
         cents = int(cents or 0)
 
         if dollars < 0: return None
-        if cents < 0: return None
+        if cents < 0 or cents >= 100: return None
 
         return dollars * 100 + cents
     except ValueError:
