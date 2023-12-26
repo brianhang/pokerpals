@@ -29,13 +29,7 @@ def generate_entry_code() -> str:
 
 
 def get_optional_cents_form_param(name: str) -> Optional[int]:
-    try:
-        tokens = request.form.get(name).split('.')
-        amount = int(tokens[0]) * 100
-        if len(tokens) > 1: amount += int(tokens[1])
-        return amount
-    except ValueError:
-        return None
+    return cents_utils.from_string(request.form.get(name))
 
 
 def get_cents_form_param(name: str, default: int = 0) -> int:
