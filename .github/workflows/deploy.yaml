@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.5
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Run deploy script
+        run: |
+          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY poker@poker.brianhang.me "./deploy.sh"
