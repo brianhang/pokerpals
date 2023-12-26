@@ -16,4 +16,4 @@ jobs:
 
       - name: Run deploy script
         run: |
-          ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY poker@poker.brianhang.me "./deploy.sh"
+          ssh -o StrictHostKeyChecking=no -i $DEPLOY_SSH_PRIVATE_KEY poker@poker.brianhang.me "./deploy.sh"
