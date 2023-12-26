@@ -9,11 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up SSH key
-        uses: webfactory/ssh-agent@v0.8.0
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v1.0.1
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-
-      - name: Run deploy script
-        run: |
-          ssh -o StrictHostKeyChecking=no -i $DEPLOY_SSH_PRIVATE_KEY poker@poker.brianhang.me "./deploy.sh"
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          script: ./deploy.sh
