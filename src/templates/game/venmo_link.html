@@ -1,6 +1,6 @@
 {% macro venmo_link(payment, venmo_url, return_game) %}
 <div class="venmo-cta">
-    <div class="venmo-cta-text">Send ${{ payment.amount_text() }} to {{ payment.to_player_id }}</div>
+    <div class="venmo-cta-text">Send {{ payment.amount_text() }} to {{ payment.to_player_id }}</div>
     <div class="venmo-cta-buttons">
         <a class="venmo-cta-link" href="{{ venmo_url }}">
             <div>

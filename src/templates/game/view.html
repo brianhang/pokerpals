@@ -13,12 +13,12 @@
     <div class="player-info">
         <ul>
             {% if player.buyin_cents > 0 %}
-            <li><strong>Bought in</strong>: ${{ player.buyin_text() }}</li>
+            <li><strong>Bought in</strong>: {{ player.buyin_text() }}</li>
             {% else %}
             <li>Spectating</li>
             {% endif %}
             {% if player.cashout_cents is not none %}
-            <li><strong>Cashed out</strong>: ${{ player.cashout_text() }}</li>
+            <li><strong>Cashed out</strong>: {{ player.cashout_text() }}</li>
             {% endif %}
         </ul>
     </div>
@@ -61,9 +61,9 @@
                     href="/game/join/{{ game.id }}/?code={{ game.entry_code }}"><code>{{ game.entry_code }}</code></a>
             </li>
             {% endif %}
-            <li><strong>Buyin</strong>: ${{ buyin_amount }}</li>
-            <li><strong>Buyin Total</strong>: ${{ buyin_total }}</li>
-            <li><strong>Cash Out Total</strong>: ${{ cashout_total }}</li>
+            <li><strong>Buyin</strong>: {{ buyin_amount }}</li>
+            <li><strong>Buyin Total</strong>: {{ buyin_total }}</li>
+            <li><strong>Cash Out Total</strong>: {{ cashout_total }}</li>
         </ul>
     </div>
     {% if player and game.is_active %}
@@ -109,7 +109,7 @@
             {% for payment in payments %}
                 <li>
                     <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
-                    sends ${{ payment.amount_text() }} to
+                    sends {{ payment.amount_text() }} to
                     <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
                 </li>
             {% endfor %}

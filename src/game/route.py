@@ -171,7 +171,7 @@ def handle_buyin_form(player: Player) -> Response:
     if not active_game:
         return redirect(url_for('home'))
 
-    buyin_prefill = cents_utils.to_string(active_game.buyin_cents)
+    buyin_prefill = cents_utils.to_numerical_string(active_game.buyin_cents)
     return render_template('game/buyin.html', buyin_prefill=buyin_prefill, game=active_game, player=player)
 
 
@@ -242,7 +242,6 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
     err = None
     cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cents = get_cents_form_param('amount')
-    cashout_prefill = cents_utils.to_string(cents)
 
     if cents > cashout_max_cents:
         err = f'You can only cash out at most {cents_utils.to_string(cashout_max_cents)}'
@@ -250,6 +249,7 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
         err = 'Please provide a valid amount to cash out'
 
     if err:
+        cashout_prefill = cents_utils.to_string(cents)
         return render_template('game/cashout.html', err=err, cashout_prefill=cashout_prefill, game=active_game, player=player), 400
 
     game_players_repository.cash_out(game_id, player_id, cents)
@@ -333,7 +333,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
 
     leftover_cents = players.total_buyin_cents() - players.total_cashout_cents()
     if leftover_cents > 0:
-        warning = f'There is ${cents_utils.to_string(leftover_cents)} left on the table, please check everyone has cashed out'
+        warning = f'There is {cents_utils.to_string(leftover_cents)} left on the table, please check everyone has cashed out'
     else:
         err = get_end_game_err(players)
 
@@ -393,9 +393,9 @@ def handle_edit_player_form(player: Player, game_id: int, target_player_id: str)
     if not target_player:
         return redirect(url_for('game_view', game_id=game_id)), abort(403)
 
-    buyin_prefill = cents_utils.to_string(
+    buyin_prefill = cents_utils.to_numerical_string(
         target_player.buyin_cents) if target_player.buyin_cents is not None else None
-    cashout_prefill = cents_utils.to_string(
+    cashout_prefill = cents_utils.to_numerical_string(
         target_player.cashout_cents) if target_player.cashout_cents is not None else None
 
     return render_template('game/edit_player.html', player=player, target_player=target_player, game=req_game, buyin_prefill=buyin_prefill, cashout_prefill=cashout_prefill)
