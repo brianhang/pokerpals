@@ -213,15 +213,12 @@ def handle_cashout_form(player: Player) -> Response:
     if not game_player:
         return redirect(url_for('home'))
 
-    cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
-    cashout_max = cents_utils.to_string(cashout_max_cents)
-
     if game_player.cashout_cents:
-        cashout_prefill = cents_utils.to_string(game_player.cashout_cents)
+        cashout_prefill = cents_utils.to_numerical_string(game_player.cashout_cents)
     else:
         cashout_prefill = ""
 
-    return render_template('game/cashout.html', cashout_max=cashout_max, cashout_max_cents=cashout_max_cents, cashout_prefill=cashout_prefill, game=active_game, player=player)
+    return render_template('game/cashout.html', cashout_prefill=cashout_prefill, game=active_game, player=player)
 
 
 def handle_cashout(player: Player, socketio: SocketIO) -> Response:
@@ -240,12 +237,9 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
         return redirect(url_for('home'))
 
     err = None
-    cashout_max_cents = get_max_cashout_cents(active_game_players, game_player)
     cents = get_cents_form_param('amount')
 
-    if cents > cashout_max_cents:
-        err = f'You can only cash out at most {cents_utils.to_string(cashout_max_cents)}'
-    elif cents < 0:
+    if cents < 0:
         err = 'Please provide a valid amount to cash out'
 
     if err:
