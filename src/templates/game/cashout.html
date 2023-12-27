@@ -11,7 +11,7 @@
         {% endif %}
         <form class="form" action="/game/cashout" method="post">
             <label for="amount">Please enter the amount to cash out:</label>
-            <input autofocus="number" inputmode="decimal" name="amount" step="0.01" min="0.00" max="{{ cashout_max }}"
+            <input autofocus="number" inputmode="decimal" name="amount" step="0.01" min="0.00"
                 value="{{ cashout_prefill }}" placeholder="0.00">
             <div class="form-buttons">
                 <input type="submit" value="Cash Out">
