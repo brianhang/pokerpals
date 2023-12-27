@@ -53,10 +53,18 @@
         <div class="secondary"><em>Created by <a href="https://venmo.com/{{ game.creator_id }}/">{{ game.creator_id
                     }}</a> on {{ game.human_created_time() }}</em></div>
         <div class="game-qr-code top-gap">
-            <img src="/game/qrcode/{{ game.id }}?code={{ game.entry_code }}" />
+            {% if game_player %}
+            <a href="/game/join/{{ game.id }}/?code={{ game.entry_code }}">
+                <img src="/game/qrcode/{{ game.id }}?code={{ game.entry_code }}" />
+            </a>
+            {% else %}
+            <a href="/game/join/{{ game.id }}/">
+                <img src="/game/qrcode/{{ game.id }}" />
+            </a>
+            {% endif %}
         </div>
         <ul class="game-header-items">
-            {% if player.active_game_id == game.id or game.creator_id == player.venmo_username %}
+            {% if game_player %}
             <li><strong>Entry Code</strong>: <a
                     href="/game/join/{{ game.id }}/?code={{ game.entry_code }}"><code>{{ game.entry_code }}</code></a>
             </li>
