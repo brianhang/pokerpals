@@ -219,8 +219,10 @@ def handle_cashout_form(player: Player) -> Response:
     else:
         cashout_prefill = ""
 
-    return render_template('game/cashout.html', cashout_prefill=cashout_prefill,
-                           game=active_game, player=player)
+    return render_template('game/cashout.html',
+                           cashout_prefill=cashout_prefill,
+                           game=active_game,
+                           player=player)
 
 
 def handle_cashout(player: Player, socketio: SocketIO) -> Response:
@@ -246,8 +248,8 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
 
     if err:
         cashout_prefill = cents_utils.to_string(cents)
-        return render_template('game/cashout.html', 
-                               err=err, 
+        return render_template('game/cashout.html',
+                               err=err,
                                cashout_prefill=cashout_prefill,
                                game=active_game,
                                player=player), 400
