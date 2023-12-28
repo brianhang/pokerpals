@@ -2,7 +2,13 @@
 {% block body %}
 <div class="container">
     <div>
-        Are you sure you want to dismiss your payment of {{ payment.amount_text() }} to {{ payment.to_player_id }}?
+        Are you sure you want to dismiss the payment of {{ payment.amount_text() }}
+        {% if payment.to_player_id == player.venmo_username %}
+        from {{ payment.from_player_id }}
+        {% else %}
+        to {{ payment.to_player_id }}
+        {% endif %}
+        for <a href="/g/{{ payment.game_id }}/">game #{{ payment.game_id }}</a>?
     </div>
     <form class="form top-gap" action="/payment/dismiss/{{ payment.id }}" method="post">
         <div class="form-buttons">
