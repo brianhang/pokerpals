@@ -1,8 +1,9 @@
 from typing import Optional
 
+
 def to_numerical_string(tot_cents: int) -> str:
     """
-    Returns the human-readable string for an integer representing the number of 
+    Returns the human-readable string for an integer representing the number of
     cents in the format "XX.XX"
     Negative values are allowed and will be displayed as "-XX.XX"
     """
@@ -15,17 +16,18 @@ def to_numerical_string(tot_cents: int) -> str:
 
 def to_string(tot_cents: int) -> str:
     """
-    Returns the human-readable string for an integer representing the number of 
+    Returns the human-readable string for an integer representing the number of
     cents in the format "$XX.XX"
     Negative values are allowed and will be displayed as "-$XX.XX"
     """
     s = to_numerical_string(tot_cents)
-    if s[0] == '-': return '-$'+s[1:]
+    if s[0] == '-':
+        return '-$'+s[1:]
     return '$'+s
 
 def from_string(s :str) -> Optional[int]:
     """
-    Converts the input string in the format "XXX.XX" to an integer representing 
+    Converts the input string in the format "XXX.XX" to an integer representing
     number of cents.  None is returned if the string can not be parsed.
     """
     try:
@@ -36,7 +38,8 @@ def from_string(s :str) -> Optional[int]:
         if cents < 0 or cents >= 100: return None
 
         amt = abs(dollars) * 100 + cents
-        if dollars < 0: amt *= -1
+        if dollars < 0:
+            amt *= -1
         return amt
     except ValueError:
         return None
