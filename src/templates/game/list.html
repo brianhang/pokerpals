@@ -19,8 +19,8 @@
     {% if payment_and_urls|length %}
     <div>
         <h2>Pending Payments</h2>
-        {% for payment, venmo_url in payment_and_urls %}
-        {{ venmo_link(payment, venmo_url, None) }}
+        {% for payment, payment_url in payment_and_urls %}
+        {{ venmo_link(player, payment, payment_url, None) }}
         {% endfor %}
     </div>
     {% endif %}

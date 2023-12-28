@@ -1,13 +1,14 @@
 import math
 from random import choice, choices
 from string import ascii_uppercase
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from flask import Response, abort, redirect, render_template, request, url_for
 from flask_socketio import SocketIO
 
 import game.repository
 import game_players.repository as game_players_repository
+from payment.payment import Payment
 import payment.repository as payment_repository
 import payout.settle
 import utils.cents as cents_utils
@@ -50,6 +51,35 @@ def find_game_player(cur_game_players: GamePlayers, player_id: str) -> Optional[
                  if game_player.player_venmo_username == player_id), None)
 
 
+PaymentURL = NamedTuple('PaymentURL', [('url', str), ('is_send', bool)])
+
+
+def get_payment_and_urls(player: Player, payments: list[Payment]) -> list[(Payment, PaymentURL)]:
+    payment_and_urls = []
+
+    for payment in payments:
+        is_send = payment.from_player_id == player.venmo_username
+
+        if is_send:
+            venmo_username = payment.to_player_id
+            txn = utils.venmo.link.Transaction.PAY
+        else:
+            venmo_username = payment.from_player_id
+            txn = utils.venmo.link.Transaction.CHARGE
+
+        venmo_url = utils.venmo.link.get_payment_url(
+            venmo_username=venmo_username,
+            txn=txn,
+            amount_cents=payment.cents,
+            is_mobile=request.MOBILE,
+            note=choice(VENMO_NOTES),
+        )
+        payment_url = PaymentURL(venmo_url, is_send)
+        payment_and_urls.append((payment, payment_url))
+
+    return payment_and_urls
+
+
 def handle_game_list(player: Player) -> Response:
     active_games = game.repository.fetch_all_active()
     current_game = next(
@@ -63,17 +93,7 @@ def handle_game_list(player: Player) -> Response:
     )
     recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
     payments = payment_repository.fetch_for_player(player.venmo_username)
-    payment_and_urls = []
-
-    for payment in payments:
-        venmo_url = utils.venmo.link.get_payment_url(
-            venmo_username=payment.to_player_id,
-            txn=utils.venmo.link.Transaction.PAY,
-            amount_cents=payment.cents,
-            is_mobile=request.MOBILE,
-            note=choice(VENMO_NOTES),
-        )
-        payment_and_urls.append((payment, venmo_url))
+    payment_and_urls = get_payment_and_urls(player, payments)
 
     return render_template('game/list.html', player=player, active_games=active_games, recent_games=recent_games, current_game=current_game, payment_and_urls=payment_and_urls)
 
@@ -141,23 +161,16 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
-    payments = payment_repository.fetch_for_game(game_id)
+    payments = payment_repository.fetch_for_game(game_id, only_incomplete=True)
 
     payment_and_urls = []
 
     if player:
-        for payment in payments:
-            if payment.from_player_id != player.venmo_username or payment.completed:
-                continue
-
-            venmo_url = utils.venmo.link.get_payment_url(
-                venmo_username=payment.to_player_id,
-                txn=utils.venmo.link.Transaction.PAY,
-                amount_cents=payment.cents,
-                is_mobile=request.MOBILE,
-                note=choice(VENMO_NOTES),
-            )
-            payment_and_urls.append((payment, venmo_url))
+        player_payments = [
+            payment for payment in payments
+            if player.venmo_username in (payment.from_player_id, payment.to_player_id)
+        ]
+        payment_and_urls = get_payment_and_urls(player, player_payments)
 
     return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments, payment_and_urls=payment_and_urls, buyin_amount=buyin_amount)
 
