@@ -214,11 +214,13 @@ def handle_cashout_form(player: Player) -> Response:
         return redirect(url_for('home'))
 
     if game_player.cashout_cents:
-        cashout_prefill = cents_utils.to_numerical_string(game_player.cashout_cents)
+        cashout_prefill = cents_utils.to_numerical_string(
+                game_player.cashout_cents)
     else:
         cashout_prefill = ""
 
-    return render_template('game/cashout.html', cashout_prefill=cashout_prefill, game=active_game, player=player)
+    return render_template('game/cashout.html', cashout_prefill=cashout_prefill,
+                           game=active_game, player=player)
 
 
 def handle_cashout(player: Player, socketio: SocketIO) -> Response:
@@ -244,7 +246,11 @@ def handle_cashout(player: Player, socketio: SocketIO) -> Response:
 
     if err:
         cashout_prefill = cents_utils.to_string(cents)
-        return render_template('game/cashout.html', err=err, cashout_prefill=cashout_prefill, game=active_game, player=player), 400
+        return render_template('game/cashout.html', 
+                               err=err, 
+                               cashout_prefill=cashout_prefill,
+                               game=active_game,
+                               player=player), 400
 
     game_players_repository.cash_out(game_id, player_id, cents)
     game_players_repository.remove_player(game_id, player_id)
