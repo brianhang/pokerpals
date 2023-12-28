@@ -9,7 +9,8 @@ def handle_payment_dismiss(player: Player, payment_id: int) -> Response:
 
     if not payment:
         return abort(404)
-    if player.venmo_username not in (payment.from_player_id, payment.to_player_id):
+    if player.venmo_username != payment.from_player_id and \
+            player.venmo_username != payment.to_player_id:
         return abort(403)
 
     confirmed = bool(request.form.get('confirmed', ''))

@@ -54,7 +54,10 @@ def find_game_player(cur_game_players: GamePlayers, player_id: str) -> Optional[
 PaymentURL = NamedTuple('PaymentURL', [('url', str), ('is_send', bool)])
 
 
-def get_payment_and_urls(player: Player, payments: list[Payment]) -> list[(Payment, PaymentURL)]:
+def get_payment_and_urls(
+    player: Player,
+    payments: list[Payment],
+) -> list[(Payment, PaymentURL)]:
     payment_and_urls = []
 
     for payment in payments:
@@ -168,11 +171,23 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     if player:
         player_payments = [
             payment for payment in payments
-            if player.venmo_username in (payment.from_player_id, payment.to_player_id)
+            if player.venmo_username == payment.from_player_id or
+            player.venmo_username == payment.to_player_id
         ]
         payment_and_urls = get_payment_and_urls(player, player_payments)
 
-    return render_template('game/view.html', game=req_game, player=player, players=req_game_players, buyin_total=buyin_total, game_player=game_player, cashout_total=cashout_total, payments=payments, payment_and_urls=payment_and_urls, buyin_amount=buyin_amount)
+    return render_template(
+        'game/view.html',
+        game=req_game,
+        player=player,
+        players=req_game_players,
+        buyin_total=buyin_total,
+        game_player=game_player,
+        cashout_total=cashout_total,
+        payments=payments,
+        payment_and_urls=payment_and_urls,
+        buyin_amount=buyin_amount,
+    )
 
 
 def handle_buyin_form(player: Player) -> Response:
