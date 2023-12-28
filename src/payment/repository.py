@@ -23,11 +23,16 @@ def fetch(payment_id: int) -> Optional[Payment]:
         )
 
 
-def fetch_for_game(game_id: int) -> list[Payment]:
+def fetch_for_game(game_id: int, only_incomplete=False) -> list[Payment]:
     payments = []
+    conditions = 'game_id = ?'
+
+    if only_incomplete:
+        conditions += ' AND completed = 0'
+
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT id, from_player_id, to_player_id, cents, completed FROM game_payments WHERE game_id = ? ORDER BY id ASC', (game_id,))
+            f'SELECT id, from_player_id, to_player_id, cents, completed FROM game_payments WHERE {conditions} ORDER BY id ASC', (game_id,))
 
         for row in cursor:
             payments.append(Payment(
@@ -42,7 +47,7 @@ def fetch_for_game(game_id: int) -> list[Payment]:
     return payments
 
 
-def fetch_for_player(player_id: str, only_incomplete=True, only_from=True) -> list[Payment]:
+def fetch_for_player(player_id: str, only_incomplete=True, only_from=False) -> list[Payment]:
     payments = []
     with db.cursor.get() as cursor:
         if only_from:
