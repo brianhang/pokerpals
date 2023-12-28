@@ -50,7 +50,11 @@ def fetch_for_game(game_id: int, only_incomplete=False) -> list[Payment]:
     return payments
 
 
-def fetch_for_player(player_id: str, only_incomplete=True, only_from=False) -> list[Payment]:
+def fetch_for_player(
+    player_id: str,
+    only_incomplete=True,
+    only_from=False,
+) -> list[Payment]:
     payments = []
     with db.cursor.get() as cursor:
         if only_from:
