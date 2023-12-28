@@ -333,8 +333,8 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
 
     leftover_cents = players.total_buyin_cents() - players.total_cashout_cents()
     if leftover_cents > 0:
-        warning = f'There is {cents_utils.to_string(leftover_cents)} left on ' \
-        'the table, please check everyone has cashed out'
+        warning = f'There is {cents_utils.to_string(leftover_cents)} left on' \
+                   ' the table, please check everyone has cashed out'
     else:
         err = get_end_game_err(players)
 
