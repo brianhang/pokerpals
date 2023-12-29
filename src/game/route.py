@@ -52,12 +52,23 @@ def find_game_player(cur_game_players: GamePlayers, player_id: str) -> Optional[
 
 
 PaymentURL = NamedTuple('PaymentURL', [('url', str), ('is_send', bool)])
+PaymentURL.__doc__ = '''
+Information for rendering a Venmo payment link
+
+`url` - The full Venmo payment link URL
+`is_send` - If the payment link is for sending money to someone els
+'''
 
 
 def get_payment_and_urls(
     player: Player,
     payments: list[Payment],
 ) -> list[(Payment, PaymentURL)]:
+    """
+    Returns a list of `PaymentURL`s for rendering Venmo payment links that
+    `player` should see to complete the given list of payments that they are
+    involved in
+    """
     payment_and_urls = []
 
     for payment in payments:
@@ -243,7 +254,7 @@ def handle_cashout_form(player: Player) -> Response:
 
     if game_player.cashout_cents:
         cashout_prefill = cents_utils.to_numerical_string(
-                game_player.cashout_cents)
+            game_player.cashout_cents)
     else:
         cashout_prefill = ""
 
@@ -364,7 +375,7 @@ def handle_end_game_form(player: Player, game_id: int) -> Response:
     leftover_cents = players.total_buyin_cents() - players.total_cashout_cents()
     if leftover_cents > 0:
         warning = f'There is {cents_utils.to_string(leftover_cents)} left on' \
-                   ' the table, please check everyone has cashed out'
+            ' the table, please check everyone has cashed out'
     else:
         err = get_end_game_err(players)
 
