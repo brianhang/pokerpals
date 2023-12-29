@@ -318,3 +318,16 @@ input[type=submit]:active {
 .player-edit a {
     font-size: 0.9rem;
 }
+
+footer {
+    align-items: center;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+footer ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
