@@ -4,7 +4,7 @@
         <h3>{{ game.lobby_name }}<span class="game-view-id secondary">#{{ game.id }}</span></h3>
         <div class="game-info">
             <ul>
-                <li>Buy In: ${{ game.buyin_text() }}</li>
+                <li>Buy In: {{ game.buyin_text() }}</li>
                 <li title="{{ game.created }}">Created: {{ game.human_created_time() }}</li>
             </ul>
         </div>
