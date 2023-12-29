@@ -1,10 +1,20 @@
-{% macro venmo_link(payment, venmo_url, return_game) %}
+{% macro venmo_link(player, payment, payment_url, return_game) %}
 <div class="venmo-cta">
-    <div class="venmo-cta-text">Send {{ payment.amount_text() }} to {{ payment.to_player_id }}</div>
+    <div class="venmo-cta-text">
+        {% if payment_url.is_send %}
+        {{ payment.amount_text() }} to {{ payment.to_player_id }}
+        {% else %}
+        {{ payment.amount_text() }} from {{ payment.from_player_id }}
+        {% endif %}
+        {% if not return_game %}
+        <br />
+        <span class="venmo-cta-game"><a href="/g/{{ payment.game_id }}">Game #{{ payment.game_id }}</a></span>
+        {% endif %}
+    </div>
     <div class="venmo-cta-buttons">
-        <a class="venmo-cta-link" href="{{ venmo_url }}">
+        <a class="venmo-cta-link" href="{{ payment_url.url }}">
             <div>
-                Venmo
+                {{ 'Send' if payment_url.is_send else 'Request' }}
             </div>
         </a>
         <form class="form" action="/payment/dismiss/{{ payment.id }}" method="post">

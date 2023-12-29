@@ -8,7 +8,9 @@ a {
     color: inherit;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     margin-bottom: 0;
 }
 
@@ -124,7 +126,8 @@ ul {
     padding: 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+    line-height: 1;
     margin-bottom: 1rem;
 }
 
@@ -158,6 +161,11 @@ ul {
     line-height: 1;
 }
 
+.venmo-cta-game {
+    color: #c9c9c9;
+    font-size: 0.9rem;
+}
+
 input {
     font-family: inherit;
     font-size: 1rem;
@@ -171,7 +179,10 @@ input:focus {
     box-shadow: 0px 0px 2px #1D5B79;
 }
 
-.button, button, input[type=button], input[type=submit] {
+.button,
+button,
+input[type=button],
+input[type=submit] {
     text-decoration: none;
     font-family: inherit;
     padding: 1rem;
@@ -186,11 +197,15 @@ input:focus {
     border-radius: 0;
 }
 
-button:hover, input[type=button]:hover, input[type=submit]:hover {
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover {
     background-color: #2d2d2d;
 }
 
-button:active, input[type=button]:active, input[type=submit]:active {
+button:active,
+input[type=button]:active,
+input[type=submit]:active {
     transform: translateY(4px);
 }
 
@@ -226,12 +241,14 @@ button:active, input[type=button]:active, input[type=submit]:active {
     font-style: italic;
 }
 
-.game-list, .player-list {
+.game-list,
+.player-list {
     display: grid;
     gap: 0.5rem;
 }
 
-.game-list-item, .player-item {
+.game-list-item,
+.player-item {
     padding: 0.5rem;
     color: var(--shadow-color);
     outline: 1px solid var(--shadow-color);
@@ -240,17 +257,20 @@ button:active, input[type=button]:active, input[type=submit]:active {
     transition: background-color 200ms ease;
 }
 
-.game-list-item:hover, .player-item:hover {
+.game-list-item:hover,
+.player-item:hover {
     background-color: #eee;
 }
 
-.game-list-item h3, .player-item h3 {
+.game-list-item h3,
+.player-item h3 {
     text-decoration: none;
     font-weight: 100;
     margin-top: 0;
 }
 
-.game-info, .player-info {
+.game-info,
+.player-info {
     font-size: 0.9rem;
 }
 

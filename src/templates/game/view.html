@@ -33,20 +33,20 @@
 {% block body %}
 <div class="container">
     {% if game.is_active%}
-        {% if not player %}
-            <div class="info">
-                Please <a href="/login?return=game_view&return_game_id={{ game.id }}">login</a> to participate in the game.
-            </div>
-        {% endif %}
+    {% if not player %}
+    <div class="info">
+        Please <a href="/login?return=game_view&return_game_id={{ game.id }}">login</a> to participate in the game.
+    </div>
+    {% endif %}
     {% else %}
-        <div class="info">
-            This game has ended.
-        </div>
+    <div class="info">
+        This game has ended.
+    </div>
     {% endif %}
     <div>
-    {% for payment, venmo_url in payment_and_urls %}
-        {{ venmo_link(payment, venmo_url, game.id) }}
-    {% endfor %}
+        {% for payment, payment_url in payment_and_urls %}
+        {{ venmo_link(player, payment, payment_url, game.id) }}
+        {% endfor %}
     </div>
     <div>
         {{ game_title(game) }}
@@ -75,38 +75,38 @@
         </ul>
     </div>
     {% if player and game.is_active %}
-        {% if player.venmo_username == game.creator_id %}
-            <div id="game-admin-actions">
-                <h3>Game Actions</h3>
-                <ul>
-                    <li><a href="/game/end/{{ game.id }}/">End Game</a></li>
-                </ul>
-            </div>
-        {% endif %}
-        {% if player.active_game_id == game.id %}
-            <div id="game-player-actions">
-                <h3>Player Actions</h3>
-                <ul>
-                    <li><a href="/game/buyin/">Buy In</a></li>
-                    {% if game_player.buyin_cents > 0 %}
-                    <li><a href="/game/cashout/">Cash Out</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        {% elif not player.active_game_id %}
-            <div id="game-player-actions">
-                <h3>Player Actions</h3>
-                <ul>
-                    <li><a href="/game/join/{{ game.id }}/">Join Game</a></li>
-                </ul>
-            </div>
-        {% endif %}
+    {% if player.venmo_username == game.creator_id %}
+    <div id="game-admin-actions">
+        <h3>Game Actions</h3>
+        <ul>
+            <li><a href="/game/end/{{ game.id }}/">End Game</a></li>
+        </ul>
+    </div>
+    {% endif %}
+    {% if player.active_game_id == game.id %}
+    <div id="game-player-actions">
+        <h3>Player Actions</h3>
+        <ul>
+            <li><a href="/game/buyin/">Buy In</a></li>
+            {% if game_player.buyin_cents > 0 %}
+            <li><a href="/game/cashout/">Cash Out</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% elif not player.active_game_id %}
+    <div id="game-player-actions">
+        <h3>Player Actions</h3>
+        <ul>
+            <li><a href="/game/join/{{ game.id }}/">Join Game</a></li>
+        </ul>
+    </div>
+    {% endif %}
     {% endif %}
     <div>
         <h3>Players</h3>
         <div class="player-list">
             {% for cur_player in players.players %}
-                {{ player_item(game, player, cur_player) }}
+            {{ player_item(game, player, cur_player) }}
             {% endfor %}
         </div>
     </div>
@@ -115,11 +115,11 @@
         <h3>Payments</h3>
         <ul>
             {% for payment in payments %}
-                <li>
-                    <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
-                    sends {{ payment.amount_text() }} to
-                    <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
-                </li>
+            <li>
+                <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
+                sends {{ payment.amount_text() }} to
+                <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
+            </li>
             {% endfor %}
         </ul>
     </div>
