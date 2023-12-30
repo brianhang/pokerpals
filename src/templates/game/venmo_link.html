@@ -2,9 +2,9 @@
 <div class="venmo-cta">
     <div class="venmo-cta-text">
         {% if payment_url.is_send %}
-        {{ payment.amount_text() }} to {{ payment.to_player_id }}
+        {{ payment.amount_text() }} to <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
         {% else %}
-        {{ payment.amount_text() }} from {{ payment.from_player_id }}
+        {{ payment.amount_text() }} from <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
         {% endif %}
         {% if not return_game %}
         <br />
