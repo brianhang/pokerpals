@@ -117,6 +117,9 @@ class TestCents(unittest.TestCase):
         c = from_string("20.01")
         self.assertEqual(c, 2001)
 
+        c = from_string("20.2")
+        self.assertEqual(c, 2020)
+
 
     def test_from_string_failure(self):
         c = from_string("abcd")

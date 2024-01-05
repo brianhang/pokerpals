@@ -32,6 +32,8 @@ def from_string(s :str) -> Optional[int]:
     """
     try:
         dollars, _, cents = s.partition('.')
+        while len(cents) < 2:
+            cents += '0'
         dollars = int(dollars or 0)
         cents = int(cents or 0)
 
