@@ -183,7 +183,7 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
         player_payments = [
             payment for payment in payments
             if (player.venmo_username == payment.from_player_id or
-            player.venmo_username == payment.to_player_id) and
+                player.venmo_username == payment.to_player_id) and
             not payment.completed
         ]
         payment_and_urls = get_payment_and_urls(player, player_payments)
