@@ -175,15 +175,16 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
         req_game_players.total_cashout_cents())
-    payments = payment_repository.fetch_for_game(game_id, only_incomplete=True)
+    payments = payment_repository.fetch_for_game(game_id)
 
     payment_and_urls = []
 
     if player:
         player_payments = [
             payment for payment in payments
-            if player.venmo_username == payment.from_player_id or
-            player.venmo_username == payment.to_player_id
+            if (player.venmo_username == payment.from_player_id or
+            player.venmo_username == payment.to_player_id) and
+            not payment.completed
         ]
         payment_and_urls = get_payment_and_urls(player, player_payments)
 
