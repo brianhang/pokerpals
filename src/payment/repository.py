@@ -81,7 +81,7 @@ def fetch_for_player(
                 from_player_id=row[2],
                 to_player_id=row[3],
                 cents=row[4],
-                completed=row[5]
+                completed=bool(row[5])
             ))
 
     return payments
