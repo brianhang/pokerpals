@@ -1,7 +1,7 @@
 import math
 from random import choice, choices
 from string import ascii_uppercase
-from typing import NamedTuple, Optional
+from typing import Callable, NamedTuple, Optional
 
 from flask import Response, abort, redirect, render_template, request, url_for
 from flask_socketio import SocketIO
@@ -63,6 +63,7 @@ Information for rendering a Venmo payment link
 def get_payment_and_urls(
     player: Player,
     payments: list[Payment],
+    get_venmo_note: Callable[[Payment], str],
 ) -> list[(Payment, PaymentURL)]:
     """
     Returns a list of `PaymentURL`s for rendering Venmo payment links that
@@ -81,12 +82,13 @@ def get_payment_and_urls(
             venmo_username = payment.from_player_id
             txn = utils.venmo.link.Transaction.CHARGE
 
+        note = get_venmo_note(payment)
         venmo_url = utils.venmo.link.get_payment_url(
             venmo_username=venmo_username,
             txn=txn,
             amount_cents=payment.cents,
             is_mobile=request.MOBILE,
-            note=choice(VENMO_NOTES),
+            note=note,
         )
         payment_url = PaymentURL(venmo_url, is_send)
         payment_and_urls.append((payment, payment_url))
@@ -107,7 +109,7 @@ def handle_game_list(player: Player) -> Response:
     )
     recent_games = game.repository.fetch_many(recent_game_ids, reverse=True)
     payments = payment_repository.fetch_for_player(player.venmo_username)
-    payment_and_urls = get_payment_and_urls(player, payments)
+    payment_and_urls = get_payment_and_urls(player, payments, get_venmo_note)
 
     return render_template('game/list.html', player=player, active_games=active_games, recent_games=recent_games, current_game=current_game, payment_and_urls=payment_and_urls)
 
@@ -194,7 +196,11 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
                 player.venmo_username == payment.to_player_id) and
             not payment.completed
         ]
-        payment_and_urls = get_payment_and_urls(player, player_payments)
+        payment_and_urls = get_payment_and_urls(
+            player,
+            player_payments,
+            get_venmo_note,
+        )
 
     return render_template(
         'game/view.html',
@@ -495,3 +501,7 @@ def can_edit_player(
         return True
 
     return False
+
+
+def get_venmo_note(payment: Payment) -> str:
+    return f'{choice(VENMO_NOTES)} {payment.game_id}'
