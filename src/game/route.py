@@ -208,6 +208,7 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
         payment_and_urls=payment_and_urls,
         buyin_amount=buyin_amount,
         entry_code=entry_code,
+        can_edit_player=can_edit_player,
     )
 
 
