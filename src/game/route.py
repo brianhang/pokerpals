@@ -171,6 +171,14 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
     game_player = find_game_player(
         req_game_players, player.venmo_username
     ) if player else None
+
+    entry_code = request.args.get('code', '')
+    if not entry_code and game_player:
+        return redirect(
+            url_for('game_view', game_id=game_id, code=req_game.entry_code),
+            code=302,
+        )
+
     buyin_amount = cents_utils.to_string(req_game.buyin_cents)
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
     cashout_total = cents_utils.to_string(
@@ -199,6 +207,7 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
         payments=payments,
         payment_and_urls=payment_and_urls,
         buyin_amount=buyin_amount,
+        entry_code=entry_code,
     )
 
 
