@@ -174,7 +174,10 @@ def handle_view_game(player: Optional[Player], game_id: int) -> Response:
 
     entry_code = request.args.get('code', '')
     if not entry_code and game_player:
-        return redirect(url_for('game_view', game_id=game_id, code=req_game.entry_code), code=302)
+        return redirect(
+            url_for('game_view', game_id=game_id, code=req_game.entry_code),
+            code=302,
+        )
 
     buyin_amount = cents_utils.to_string(req_game.buyin_cents)
     buyin_total = cents_utils.to_string(req_game_players.total_buyin_cents())
