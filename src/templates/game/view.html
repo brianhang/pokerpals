@@ -22,7 +22,7 @@
             {% endif %}
         </ul>
     </div>
-    {% if game.is_active and game.creator_id == viewing_player.venmo_username %}
+    {% if game.is_active and can_edit_player(game, viewing_player, player.player_venmo_username) %}
     <div class="player-edit">
         <a href="/game/edit/{{ game.id }}/{{ player.player_venmo_username }}">Edit</a>
     </div>
