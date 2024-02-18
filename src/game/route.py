@@ -437,7 +437,7 @@ def handle_edit_player_form(player: Player, game_id: int, target_player_id: str)
 
     if not req_game.is_active:
         return redirect(url_for('game_view', game_id=game_id)), abort(400)
-    if req_game.creator_id != player.venmo_username:
+    if not can_edit_player(req_game, player, target_player_id):
         return redirect(url_for('game_view', game_id=game_id)), abort(403)
 
     target_player = game_players_repository.fetch_player(
@@ -460,7 +460,7 @@ def handle_edit_player(player: Player, game_id: int, target_player_id: str, sock
 
     if not req_game.is_active:
         return redirect(url_for('game_view', game_id=game_id)), abort(400)
-    if req_game.creator_id != player.venmo_username:
+    if not can_edit_player(req_game, player, target_player_id):
         return redirect(url_for('game_view', game_id=game_id)), abort(403)
 
     target_player = game_players_repository.fetch_player(
@@ -478,3 +478,19 @@ def handle_edit_player(player: Player, game_id: int, target_player_id: str, sock
 
     broadcast_reload(socketio, game_id)
     return redirect(url_for('game_view', game_id=game_id), code=303)
+
+
+def can_edit_player(
+    req_game: game.repository.Game,
+    player: Player,
+    target_player_id: str,
+) -> bool:
+    player_id = player.venmo_username
+
+    if req_game.creator_id == player_id:
+        return True
+
+    if player_id == target_player_id:
+        return True
+
+    return False
