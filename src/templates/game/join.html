@@ -14,7 +14,11 @@
             <input autofocus type="text" name="entry-code" value="{{ entry_code_prefill }}" required>
             <div class="form-buttons">
                 <input type="submit" value="Join Game">
+                {% if entry_code_prefill %}
+                <a class="cancel-btn" href="/g/{{ game.id }}/?code={{ entry_code_prefill }}">Cancel</a>
+                {% else %}
                 <a class="cancel-btn" href="/g/{{ game.id }}/">Cancel</a>
+                {% endif %}
             </div>
         </form>
     </div>
