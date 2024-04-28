@@ -2,6 +2,7 @@ import unittest
 
 from utils.cents import to_numerical_string, to_string, from_string
 
+
 class TestCents(unittest.TestCase):
     def test_to_numerical_string(self):
         s = to_numerical_string(0)
@@ -91,7 +92,6 @@ class TestCents(unittest.TestCase):
         s = to_string(-1234)
         self.assertEqual(s, "-$12.34")
 
-
     def test_from_string(self):
         c = from_string("0")
         self.assertEqual(c, 0)
@@ -120,7 +120,6 @@ class TestCents(unittest.TestCase):
         c = from_string("20.2")
         self.assertEqual(c, 2020)
 
-
     def test_from_string_failure(self):
         c = from_string("abcd")
         self.assertEqual(c, None)
@@ -136,3 +135,7 @@ class TestCents(unittest.TestCase):
 
         c = from_string("0.100")
         self.assertEqual(c, None)
+
+    def test_from_string_comma_delimiter(self):
+        c = from_string("1,23")
+        self.assertEqual(c, 123)

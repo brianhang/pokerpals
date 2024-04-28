@@ -25,19 +25,25 @@ def to_string(tot_cents: int) -> str:
         return '-$'+s[1:]
     return '$'+s
 
-def from_string(s :str) -> Optional[int]:
+
+def from_string(s: str) -> Optional[int]:
     """
     Converts the input string in the format "XXX.XX" to an integer representing
     number of cents.  None is returned if the string can not be parsed.
     """
     try:
-        dollars, _, cents = s.partition('.')
+        if ',' in s:
+            dollars, _, cents = s.partition(',')
+        else:
+            dollars, _, cents = s.partition('.')
+
         while len(cents) < 2:
             cents += '0'
         dollars = int(dollars or 0)
         cents = int(cents or 0)
 
-        if cents < 0 or cents >= 100: return None
+        if cents < 0 or cents >= 100:
+            return None
 
         amt = abs(dollars) * 100 + cents
         if dollars < 0:
