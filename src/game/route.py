@@ -10,6 +10,7 @@ import game.repository
 import game_players.repository as game_players_repository
 from payment.payment import Payment
 import payment.repository as payment_repository
+from payout.payout_type import NAMES as PAYOUT_TYPE_NAMES, PayoutType
 import payout.settle_minimize_transactions
 import utils.cents as cents_utils
 import utils.venmo.link
@@ -127,7 +128,12 @@ def handle_history(player: Player) -> Response:
 def handle_create_game_form(player: Player) -> Response:
     lobby_name = f"{player.venmo_username}'s Game"
     entry_code = generate_entry_code()
-    return render_template('game/create.html', lobby_name=lobby_name, entry_code=entry_code)
+    return render_template(
+        'game/create.html',
+        lobby_name=lobby_name,
+        entry_code=entry_code,
+        payout_type_names=PAYOUT_TYPE_NAMES,
+    )
 
 
 def handle_create_game(player: Player, socketio: SocketIO) -> Response:
@@ -138,7 +144,13 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
     lobby_name = request.form.get('lobby-name', '').strip()
     buyin_cents = get_cents_form_param('buy-in')
     entry_code = request.form.get('entry-code', '').strip()
+    raw_payout_type = request.form.get('payout-type', '').strip()
     err = None
+
+    try:
+        payout_type = PayoutType(int(raw_payout_type))
+    except:
+        payout_type = None
 
     if len(lobby_name) < 1:
         err = 'Please enter a valid lobby name'
@@ -148,14 +160,22 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
         err = 'Please provide a valid entry code'
 
     if err:
-        return render_template('game/create.html', err=err, lobby_name=lobby_name, entry_code=entry_code)
+        return render_template(
+            'game/create.html',
+            err=err,
+            lobby_name=lobby_name,
+            entry_code=entry_code,
+            payout_type_names=PAYOUT_TYPE_NAMES,
+            selected_payout_type=payout_type,
+        )
 
     player_id = player.venmo_username
     new_game = game.repository.create(
         creator_id=player_id,
         lobby_name=lobby_name,
         buyin_cents=buyin_cents,
-        entry_code=entry_code
+        entry_code=entry_code,
+        payout_type=payout_type,
     )
     new_game_id = new_game.id
     game_players_repository.add_player(new_game_id, player_id)

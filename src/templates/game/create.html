@@ -15,6 +15,14 @@
                 required>
             <label for="entry-code">Entry Code:</label>
             <input type="text" id="entry-code" name="entry-code" value="{{ entry_code }}" required>
+            <label for="payout-type">Payout Mode:</label>
+            <select name="payout-type">
+                {% for payout_type, name in payout_type_names.items() %}
+                <option value="{{ payout_type.value }}" {% if payout_type==selected_payout_type %}selected{% endif %}>
+                    {{ name }}
+                </option>
+                {% endfor %}
+            </select>
         </div>
         <div class="form-buttons">
             <input autofocus type="submit" value="Create Lobby">
