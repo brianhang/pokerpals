@@ -10,7 +10,8 @@ CREATE TABLE games (
     lobby_name TEXT NOT NULL,
     buyin_cents INTEGER NOT NULL,
     entry_code TEXT NOT NULL,
-    is_active BOOLEAN NOT NULL
+    is_active BOOLEAN NOT NULL,
+    payout_type INTEGER
 );
 
 CREATE TABLE players (

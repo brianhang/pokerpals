@@ -1,6 +1,7 @@
 import gevent.monkey
 
 from game.qr_code import handle_game_join_qr_code
+from migrations.add_payout_type import migrate_add_payout_type
 from payment.route import handle_payment_dismiss  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
@@ -194,6 +195,8 @@ def payment_dismiss(payment_id):
 
 
 if __name__ == '__main__':
+    migrate_add_payout_type()
+
     import os
 
     debug = os.environ.get('APP_DEBUG') is not None
