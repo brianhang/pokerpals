@@ -3,10 +3,11 @@ from typing import Optional
 import unittest
 
 from game_players.game_players import GamePlayer
-from payout.settle import get_transactions, Transaction
+from payout.settle_minimize_transactions import get_transactions
+from payout.transaction import Transaction
 
 
-class TestSettle(unittest.TestCase):
+class TestSettleMinimizeTransactions(unittest.TestCase):
     def test_empty(self):
         game_players = self.make_players([])
         transactions = get_transactions(game_players)

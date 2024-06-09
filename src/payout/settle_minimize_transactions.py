@@ -1,9 +1,5 @@
-from collections import defaultdict, namedtuple
-from typing import List
-
 from game_players.game_players import GamePlayer
-
-Transaction = namedtuple("Transaction", ["sender_id", "receiver_id", "cents"])
+from payout.transaction import Transaction
 
 DIFF_CENTS = 0
 DIFF_PLAYER_ID = 1

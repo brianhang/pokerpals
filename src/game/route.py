@@ -10,7 +10,7 @@ import game.repository
 import game_players.repository as game_players_repository
 from payment.payment import Payment
 import payment.repository as payment_repository
-import payout.settle
+import payout.settle_minimize_transactions
 import utils.cents as cents_utils
 import utils.venmo.link
 from game_players.game_players import GamePlayer, GamePlayers
@@ -405,7 +405,8 @@ def create_payments_and_end_game(game_players: GamePlayers, socketio: SocketIO) 
         return
 
     game_id = game_players.game_id
-    transactions = payout.settle.get_transactions(game_players.players)
+    transactions = payout.settle_minimize_transactions.get_transactions(
+        game_players.players)
 
     for transaction in transactions:
         payment_repository.create(
