@@ -3,10 +3,12 @@ from typing import Optional
 import unittest
 
 from game_players.game_players import GamePlayer
-from payout.settle import get_transactions, Transaction
+from payout.settle_by_biggest_winner import get_transactions
+from payout.transaction import Transaction
+from utils.biggest_winner import find_biggest_winner
 
 
-class TestSettle(unittest.TestCase):
+class TestSettleByBiggestWinner(unittest.TestCase):
     def test_empty(self):
         game_players = self.make_players([])
         transactions = get_transactions(game_players)
@@ -85,19 +87,33 @@ class TestSettle(unittest.TestCase):
             player.player_venmo_username: player.buyin_cents
             for player in game_players
         }
+        biggest_winner = find_biggest_winner(game_players)
+        biggest_winner_id = biggest_winner.player_venmo_username \
+            if biggest_winner else None
 
         for transaction in transactions:
-            self.assertIn(transaction.sender_id, balances,
-                          f'{transaction} has an invalid from player')
+            self.assertIn(
+                transaction.sender_id,
+                balances,
+                f'{transaction} has an invalid from player',
+            )
             balances[transaction.sender_id] -= transaction.cents
-            self.assertIn(transaction.receiver_id, balances,
-                          f'{transaction} has an invalid to player')
+            self.assertIn(
+                transaction.receiver_id, balances,
+                f'{transaction} has an invalid to player',
+            )
             balances[transaction.receiver_id] += transaction.cents
+
+            self.assertIn(
+                biggest_winner_id,
+                [transaction.sender_id, transaction.receiver_id],
+                'All transactions should be to/from the biggest winner',
+            )
 
         for player in game_players:
             self.assertEqual(player.cashout_cents,
                              balances[player.player_venmo_username],
-                             'Final balance does not match')
+                             f'Final balance does not match for {player}')
 
         original_sum = sum(player.buyin_cents for player in game_players)
         final_sum = sum(balances.values())

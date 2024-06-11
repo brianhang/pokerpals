@@ -19,6 +19,12 @@ class GamePlayer:
             return cent_utils.to_string(self.cashout_cents)
         return None
 
+    def earnings_cents(self) -> Optional[int]:
+        if self.cashout_cents is None:
+            return None
+
+        return self.cashout_cents - self.buyin_cents
+
 
 @dataclass
 class GamePlayers:

@@ -1,46 +1,22 @@
-from collections import defaultdict, namedtuple
-from typing import List
+from typing import Callable
 
 from game_players.game_players import GamePlayer
+from payout.payout_type import PayoutType
+from payout.settle_by_biggest_winner import get_transactions as settle_by_biggest_winner
+from payout.settle_minimize_transactions import get_transactions as settle_minimize_transactions
+from payout.transaction import Transaction
 
-Transaction = namedtuple("Transaction", ["sender_id", "receiver_id", "cents"])
 
-DIFF_CENTS = 0
-DIFF_PLAYER_ID = 1
+GetTransactionsType = Callable[[list[GamePlayer]], list[Transaction]]
 
 
-def get_transactions(game_players: list[GamePlayer]) -> list[Transaction]:
-    transactions = []
-    positive = []
-    negative = []
+def get_settle_function(payout_type: PayoutType) -> GetTransactionsType:
+    if payout_type == PayoutType.BIGGEST_WINNER:
+        return settle_by_biggest_winner
+    if payout_type == PayoutType.MINIMIZE_TRANSACTIONS:
+        return settle_minimize_transactions
 
-    for player in game_players:
-        diff = (player.cashout_cents or 0) - player.buyin_cents
-        entry = [diff, player.player_venmo_username]
-        if diff > 0:
-            positive.append(entry)
-        else:
-            negative.append(entry)
 
-    positive.sort()
-    negative.sort(reverse=True)
-
-    while positive and negative:
-        sender = negative[-1]
-        receiver = positive[-1]
-        cents = min(-sender[DIFF_CENTS], receiver[DIFF_CENTS])
-        transactions.append(Transaction(
-            sender[DIFF_PLAYER_ID],
-            receiver[DIFF_PLAYER_ID],
-            cents
-        ))
-
-        sender[DIFF_CENTS] += cents
-        receiver[DIFF_CENTS] -= cents
-
-        if sender[DIFF_CENTS] == 0:
-            negative.pop()
-        if receiver[DIFF_CENTS] == 0:
-            positive.pop()
-
-    return transactions
+def get_transactions_with_payout_type(payout_type: PayoutType, game_players: list[GamePlayer]) -> list[Transaction]:
+    settle = get_settle_function(payout_type)
+    return settle(game_players)
