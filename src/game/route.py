@@ -149,7 +149,7 @@ def handle_create_game(player: Player, socketio: SocketIO) -> Response:
 
     try:
         payout_type = PayoutType(int(raw_payout_type))
-    except:
+    except ValueError:
         payout_type = None
 
     if len(lobby_name) < 1:

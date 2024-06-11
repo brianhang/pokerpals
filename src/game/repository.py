@@ -132,5 +132,5 @@ def set_active(game_id: int, is_active: bool) -> None:
 def convert_payout_type(raw_value: any) -> Optional[PayoutType]:
     try:
         return PayoutType(raw_value)
-    except:
+    except ValueError:
         return None
