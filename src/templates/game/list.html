@@ -6,11 +6,14 @@
 {% block body %}
 <div class="container">
     <div class="game-list-intro">
-        <span>Welcome, {{ player.display_name }}!</span>
-        <form method="post" action="/logout">
-            <input type="submit" name="logout" value="Logout">
-        </form>
+        <span>Welcome, <a href="/u/{{ player.id }}">{{ player.display_name }}</a>!</span>
+        <a class="cancel-btn" href="/account">Profile</a>
     </div>
+    {% if not player.has_payment_method() %}
+    <div class="info">
+        <a href="/account">Add Venmo or Zelle</a> so people know how to pay you.
+    </div>
+    {% endif %}
     {% if current_game %}
     <div class="info">
         You are currently in {{ current_game.lobby_name }}. <a href="/g/{{ current_game.id }}/">View the game</a>.

@@ -1,8 +1,18 @@
+import html
+import re
 import time
 import unittest
 
 from tests.app_harness import AppTestCase
 from tests.test_migration_add_users import OLD_DATA, OLD_SCHEMA
+
+def page_text(response) -> str:
+    """
+    The visible text of a page, with tags removed and whitespace collapsed.
+    """
+    text = re.sub(r'<[^>]+>', ' ', response.data.decode())
+    return ' '.join(html.unescape(text).split())
+
 
 PHONE = '+14155550123'
 OTHER_PHONE = '+14155550199'
@@ -49,7 +59,7 @@ class TestPhoneLogin(AppTestCase):
                 'SELECT u.phone_number, u.display_name, v.handle FROM users u '
                 'LEFT JOIN user_payment_methods v ON v.user_id = u.id'),
         )
-        self.assertIn(b'Welcome, Dana Smith!', self.client.get('/').data)
+        self.assertIn(b'>Dana Smith</a>!', self.client.get('/').data)
 
     def test_new_user_without_venmo(self):
         response = self.log_in_new(PHONE, 'Dana')
@@ -89,7 +99,7 @@ class TestPhoneLogin(AppTestCase):
         response = self.verify(self.last_code(PHONE))
         self.assertEqual(303, response.status_code)
         self.assertTrue(response.location.endswith('/'))
-        self.assertIn(b'Welcome, Dana!', self.client.get('/').data)
+        self.assertIn(b'>Dana</a>!', self.client.get('/').data)
 
     def test_wrong_code(self):
         self.send_code(PHONE)
@@ -183,13 +193,13 @@ class TestPhoneLogin(AppTestCase):
         self.assertTrue(response.location.endswith('/login/welcome'))
         self.assertEqual({}, self.dev_codes)
         self.client.post('/login/welcome', data={'action': 'create', 'display-name': 'Dana'})
-        self.assertIn(b'Welcome, Dana!', self.client.get('/').data)
+        self.assertIn('Welcome, Dana !', page_text(self.client.get('/')))
 
         # Known number: logged straight in
         self.client.post('/logout')
         response = self.send_code(PHONE)
         self.assertTrue(response.location.endswith('/'))
-        self.assertIn(b'Welcome, Dana!', self.client.get('/').data)
+        self.assertIn('Welcome, Dana !', page_text(self.client.get('/')))
 
     def test_code_required_in_debug(self):
         self.assertIn(b'value="Send Code"', self.client.get('/login').data)
@@ -225,16 +235,17 @@ class TestClaimVenmoProfile(AppTestCase):
         self.assertEqual([(PHONE,)], self.query(
             'SELECT phone_number FROM users WHERE id = ?', (self.bob_id,)))
 
-        home = self.client.get('/').data.decode()
-        self.assertIn('Welcome, bob!', home)
+        response = self.client.get('/')
+        home, text = response.data.decode(), page_text(response)
+        self.assertIn('Welcome, bob !', text)
         # bob owes alice from game 1 and is still playing game 2
-        self.assertIn('$15.00 to alice', home)
+        self.assertIn('$15.00 to alice', text)
         self.assertIn('venmo.com/?recipients=alice', home)
-        self.assertIn("You are currently in Bob&#39;s Game", home)
+        self.assertIn("You are currently in Bob's Game", text)
 
-        game = self.client.get('/g/1?code=ABCD').data.decode()
-        self.assertIn('Created by alice', game)
-        self.assertIn('bob\n                sends $15.00 to\n                alice', game)
+        text = page_text(self.client.get('/g/1?code=ABCD'))
+        self.assertIn('Created by alice', text)
+        self.assertIn('bob sends $15.00 to alice', text)
 
         # bob created game 2, so he can manage it and edit players
         game = self.client.get('/g/2?code=WXYZ').data.decode()
@@ -334,21 +345,22 @@ class TestGamesWithUsers(AppTestCase):
         self.assertEqual([(0,)], self.query(
             'SELECT is_active FROM games WHERE id = ?', (game_id,)))
 
-        guest_home = guest.get('/').data.decode()
-        self.assertIn('$10.00 to Host', guest_home)
+        response = guest.get('/')
+        guest_home = response.data.decode()
+        self.assertIn('$10.00 to Host', page_text(response))
         self.assertIn('recipients=host-venmo', guest_home)
         self.assertIn('txn=pay', guest_home)
 
-        # The host has no way to charge a guest without Venmo
-        host_home = host.get('/').data.decode()
-        self.assertIn('$10.00 from Guest', host_home)
-        self.assertIn('No Venmo set up', host_home)
+        # The guest has no Venmo, so the host goes to the payment page
+        response = host.get('/')
+        self.assertIn('$10.00 from Guest', page_text(response))
+        self.assertIn('href="/payment/1">', response.data.decode())
 
         payment_id = self.query('SELECT id FROM game_payments')[0][0]
         response = guest.post(
             f'/payment/dismiss/{payment_id}', data={'confirmed': '1'})
         self.assertEqual(303, response.status_code)
-        self.assertNotIn('$10.00 to Host', guest.get('/').data.decode())
+        self.assertNotIn('$10.00 to Host', page_text(guest.get('/')))
 
     def test_edit_player_requires_permission(self):
         host = self.client

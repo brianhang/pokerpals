@@ -344,3 +344,49 @@ footer ul {
     margin: 0;
     list-style-type: none;
 }
+
+.pay-cta-link {
+    background-color: var(--shadow-color);
+}
+
+.pay-option {
+    margin-top: 1rem;
+    padding: 1rem;
+    outline: 1px solid var(--shadow-color);
+}
+
+.pay-option h3 {
+    margin-top: 0;
+}
+
+.pay-option-button {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.copy-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.copy-row code {
+    font-size: 1.1rem;
+    word-break: break-all;
+}
+
+.copy-btn {
+    padding: 0.5rem 1rem;
+}
+
+.venmo-cta {
+    gap: 1rem;
+}
+
+.venmo-cta-game {
+    display: inline-block;
+    margin-top: 0.5rem;
+    line-height: 1.3;
+}

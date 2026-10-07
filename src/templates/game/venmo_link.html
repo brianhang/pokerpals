@@ -2,18 +2,17 @@
 <div class="venmo-cta">
     <div class="venmo-cta-text">
         {% if payment_url.is_send %}
-        {{ payment.amount_text() }} to {{ payment.to_name }}
+        {{ payment.amount_text() }} to <a href="/u/{{ payment.to_player_id }}">{{ payment.to_name }}</a>
         {% else %}
-        {{ payment.amount_text() }} from {{ payment.from_name }}
+        {{ payment.amount_text() }} from <a href="/u/{{ payment.from_player_id }}">{{ payment.from_name }}</a>
         {% endif %}
-        {% if not payment_url.url %}
         <br />
-        <span class="secondary">No Venmo set up</span>
-        {% endif %}
-        {% if not return_game %}
-        <br />
-        <span class="venmo-cta-game"><a href="/g/{{ payment.game_id }}">Game #{{ payment.game_id }}</a></span>
-        {% endif %}
+        <span class="venmo-cta-game">
+            {% if not return_game %}
+            <a href="/g/{{ payment.game_id }}">Game #{{ payment.game_id }}</a> ·
+            {% endif %}
+            <a href="/payment/{{ payment.id }}">{{ 'Ways to pay' if payment_url.is_send else 'Details' }}</a>
+        </span>
     </div>
     <div class="venmo-cta-buttons">
         {% if payment_url.url %}
@@ -23,13 +22,17 @@
             </div>
         </a>
         {% else %}
-        <span></span>
+        <a class="venmo-cta-link pay-cta-link" href="/payment/{{ payment.id }}">
+            <div>
+                {{ 'Pay' if payment_url.is_send else 'Collect' }}
+            </div>
+        </a>
         {% endif %}
         <form class="form" action="/payment/dismiss/{{ payment.id }}" method="post">
             {% if return_game %}
             <input type="hidden" name="return-game" value="{{ return_game }}">
             {% endif %}
-            <input class="cancel-btn" type="submit" value="Dismiss" />
+            <input class="cancel-btn" type="submit" value="Done" />
         </form>
     </div>
 </div>

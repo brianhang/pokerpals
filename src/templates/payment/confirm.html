@@ -2,19 +2,22 @@
 {% block body %}
 <div class="container">
     <div>
-        Are you sure you want to dismiss the payment of {{ payment.amount_text() }}
+        Mark the payment of {{ payment.amount_text() }}
         {% if payment.to_player_id == player.id %}
         from {{ payment.from_name }}
         {% else %}
         to {{ payment.to_name }}
         {% endif %}
-        for <a href="/g/{{ payment.game_id }}/">game #{{ payment.game_id }}</a>?
+        for <a href="/g/{{ payment.game_id }}/">game #{{ payment.game_id }}</a> as done?
     </div>
     <form class="form top-gap" action="/payment/dismiss/{{ payment.id }}" method="post">
         <div class="form-buttons">
             <input type="hidden" name="return-game" value="{{ game_id }}">
+            {% if return_payment %}
+            <input type="hidden" name="return-payment" value="1">
+            {% endif %}
             <input type="hidden" name="confirmed" value="1">
-            <input autofocus type="submit" value="Dismiss Payment">
+            <input autofocus type="submit" value="Mark as Done">
             <a class="cancel-btn" href="{{ return_url }}">Cancel</a>
         </div>
     </form>

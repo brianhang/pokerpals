@@ -86,18 +86,23 @@ class AppTestCase(unittest.TestCase):
         self.dev_codes.clear()
 
         self.valid_venmo_usernames = set()
-        self.venmo_patch = mock.patch(
-            'player.route.is_valid_venmo_username',
-            lambda username: username in self.valid_venmo_usernames,
-        )
-        self.venmo_patch.start()
+        self.venmo_patches = [
+            mock.patch(
+                f'{module}.is_valid_venmo_username',
+                lambda username: username in self.valid_venmo_usernames,
+            )
+            for module in ['player.route', 'player.profile']
+        ]
+        for venmo_patch in self.venmo_patches:
+            venmo_patch.start()
 
         self.app = app_module.app
         self.app.config['TESTING'] = True
         self.client = self.app.test_client()
 
     def tearDown(self):
-        self.venmo_patch.stop()
+        for venmo_patch in self.venmo_patches:
+            venmo_patch.stop()
         self.db_path_patch.stop()
         self.env.stop()
         self.tmp_dir.cleanup()
