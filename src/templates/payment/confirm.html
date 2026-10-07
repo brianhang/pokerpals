@@ -3,10 +3,10 @@
 <div class="container">
     <div>
         Are you sure you want to dismiss the payment of {{ payment.amount_text() }}
-        {% if payment.to_player_id == player.venmo_username %}
-        from {{ payment.from_player_id }}
+        {% if payment.to_player_id == player.id %}
+        from {{ payment.from_name }}
         {% else %}
-        to {{ payment.to_player_id }}
+        to {{ payment.to_name }}
         {% endif %}
         for <a href="/g/{{ payment.game_id }}/">game #{{ payment.game_id }}</a>?
     </div>

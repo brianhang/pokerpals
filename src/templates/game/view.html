@@ -6,9 +6,11 @@
 {% macro player_item(game, viewing_player, player) %}
 <div class="player-item">
     <h3>
-        <a href="https://www.venmo.com/{{ player.player_venmo_username }}/">
-            {{ player.player_venmo_username }}
-        </a>
+        {% if player.venmo_username %}
+        <a href="https://www.venmo.com/{{ player.venmo_username }}/">{{ player.display_name }}</a>
+        {% else %}
+        {{ player.display_name }}
+        {% endif %}
     </h3>
     <div class="player-info">
         <ul>
@@ -22,9 +24,9 @@
             {% endif %}
         </ul>
     </div>
-    {% if game.is_active and viewing_player and can_edit_player(game, viewing_player, player.player_venmo_username) %}
+    {% if game.is_active and viewing_player and can_edit_player(game, viewing_player, player.player_id) %}
     <div class="player-edit">
-        <a href="/game/edit/{{ game.id }}/{{ player.player_venmo_username }}">Edit</a>
+        <a href="/game/edit/{{ game.id }}/{{ player.player_id }}">Edit</a>
     </div>
     {% endif %}
 </div>
@@ -56,8 +58,7 @@
     </div>
     <div>
         {{ game_title(game) }}
-        <div class="secondary"><em>Created by <a href="https://venmo.com/{{ game.creator_id }}/">{{ game.creator_id
-                    }}</a> on {{ game.human_created_time() }}</em></div>
+        <div class="secondary"><em>Created by {{ game.creator_name }} on {{ game.human_created_time() }}</em></div>
         <div class="game-qr-code top-gap">
             {% if game_player %}
             <a href="/game/join/{{ game.id }}/?code={{ game.entry_code }}">
@@ -81,7 +82,7 @@
         </ul>
     </div>
     {% if player and game.is_active %}
-    {% if player.venmo_username == game.creator_id %}
+    {% if player.id == game.creator_id %}
     <div id="game-admin-actions">
         <h3>Game Actions</h3>
         <ul>
@@ -126,9 +127,9 @@
         <ul>
             {% for payment in payments %}
             <li>
-                <a href="https://www.venmo.com/{{ payment.from_player_id }}/">{{ payment.from_player_id }}</a>
+                {{ payment.from_name }}
                 sends {{ payment.amount_text() }} to
-                <a href="https://www.venmo.com/{{ payment.to_player_id }}/">{{ payment.to_player_id }}</a>
+                {{ payment.to_name }}
             </li>
             {% endfor %}
         </ul>

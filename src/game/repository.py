@@ -37,7 +37,8 @@ def fetch_all_active() -> List[Game]:
 def fetch(game_id: int) -> Optional[Game]:
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT creator_id, created, lobby_name, buyin_cents, entry_code, is_active, payout_type FROM games WHERE id = ?',
+            'SELECT g.creator_id, g.created, g.lobby_name, g.buyin_cents, g.entry_code, g.is_active, g.payout_type, u.display_name '
+            'FROM games g LEFT JOIN users u ON u.id = g.creator_id WHERE g.id = ?',
             (game_id,),
         )
         row = cursor.fetchone()
@@ -54,6 +55,7 @@ def fetch(game_id: int) -> Optional[Game]:
             entry_code=row[4],
             is_active=bool(row[5]),
             payout_type=convert_payout_type(row[6]),
+            creator_name=row[7] or '',
         )
 
 
@@ -84,7 +86,7 @@ def fetch_many(game_ids: list[int], reverse=False) -> list[Game]:
 
 
 def create(
-    creator_id: str,
+    creator_id: int,
     lobby_name: str,
     buyin_cents: int,
     entry_code: str,

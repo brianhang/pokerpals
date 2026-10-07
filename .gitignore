@@ -1,5 +1,7 @@
-# Application database
+# Application database, its backups and the session signing key
 database.db
+database.db.*.bak
+secret_key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

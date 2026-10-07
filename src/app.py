@@ -1,7 +1,10 @@
+import datetime
+
 import gevent.monkey
 
 from game.qr_code import handle_game_join_qr_code
 from migrations.add_payout_type import migrate_add_payout_type
+from migrations.add_users import migrate_add_users
 from payment.route import handle_payment_dismiss  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
@@ -19,9 +22,18 @@ from game.route import (handle_buyin, handle_buyin_form, handle_cashout,
                         handle_join_game, handle_join_game_form,
                         handle_view_game)
 from player.route import (fetch_player, handle_login, handle_login_page,
-                          handle_logout)
+                          handle_logout, handle_resend, handle_verify,
+                          handle_verify_page, handle_welcome,
+                          handle_welcome_page)
+from utils.secret_key import load_secret_key
 
 app = Flask(__name__)
+app.secret_key = load_secret_key()
+app.config.update(
+    PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=365),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+)
 socketio = SocketIO(app)
 Mobility(app)
 
@@ -145,6 +157,7 @@ def game_edit_player_form(game_id, target_player_id):
     with fetch_player() as player:
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
+            target_player_id = int(target_player_id) if target_player_id.isdigit() else 0
             return handle_edit_player_form(player, game_id, target_player_id)
     return redirect(url_for('home'))
 
@@ -154,6 +167,7 @@ def game_edit_player(game_id, target_player_id):
     with fetch_player() as player:
         if player:
             game_id = int(game_id) if game_id.isdigit() else 0
+            target_player_id = int(target_player_id) if target_player_id.isdigit() else 0
             return handle_edit_player(player, game_id, target_player_id, socketio=socketio)
     return redirect(url_for('home'))
 
@@ -180,6 +194,31 @@ def login():
     return handle_login()
 
 
+@app.route('/login/verify', strict_slashes=False)
+def login_verify_page():
+    return handle_verify_page()
+
+
+@app.post('/login/verify', strict_slashes=False)
+def login_verify():
+    return handle_verify()
+
+
+@app.post('/login/resend', strict_slashes=False)
+def login_resend():
+    return handle_resend()
+
+
+@app.route('/login/welcome', strict_slashes=False)
+def login_welcome_page():
+    return handle_welcome_page()
+
+
+@app.post('/login/welcome', strict_slashes=False)
+def login_welcome():
+    return handle_welcome()
+
+
 @app.post('/logout')
 def logout():
     return handle_logout()
@@ -196,6 +235,7 @@ def payment_dismiss(payment_id):
 
 if __name__ == '__main__':
     migrate_add_payout_type()
+    migrate_add_users()
 
     import os
 

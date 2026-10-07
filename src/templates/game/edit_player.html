@@ -4,8 +4,8 @@
 <div class="container">
     {{ game_title(game) }}
     <div>
-        <div>You are editing the details for {{ target_player.player_venmo_username }}:</div>
-        <form class="form top-gap" action="/game/edit/{{ game.id }}/{{ target_player.player_venmo_username }}"
+        <div>You are editing the details for {{ target_player.display_name }}:</div>
+        <form class="form top-gap" action="/game/edit/{{ game.id }}/{{ target_player.player_id }}"
             method="post">
             <div class="grid-game-form">
                 <label for="buy-in">Buy In:</label>
