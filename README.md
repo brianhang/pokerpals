@@ -28,7 +28,9 @@ Set these environment variables for the app:
 | `TWILIO_VERIFY_SERVICE_SID` | Verify service SID (`VA...`) |
 | `APP_SECRET_KEY` | Optional. Signs login cookies. If unset, a random key is generated and saved to a `secret_key` file next to the database. |
 
-Without the Twilio variables (and without `APP_DEBUG`), nobody can log in.
+Without the Twilio variables (and without `APP_DEBUG`), phone verification is
+off: people log in by entering a phone number, with no code, and the app logs a
+warning on start. Set the variables at any time to turn verification on.
 
 ### Migrating from Venmo logins
 

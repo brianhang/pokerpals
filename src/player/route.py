@@ -87,8 +87,7 @@ def handle_login_page(return_endpoint='', return_game_id=None, return_game_code=
     return_game_code = request.args.get(
         'return_game_code', return_game_code or '').strip()
 
-    return render_template(
-        'login.html',
+    return render_login(
         return_endpoint=return_endpoint,
         return_game_id=return_game_id,
         return_game_code=return_game_code,
@@ -103,15 +102,14 @@ def handle_login() -> Response:
 
     if not phone_number:
         err = 'Please enter a valid phone number, including the area code'
-    else:
+    elif verification.is_enabled():
         try:
             verification.send_code(phone_number)
         except verification.VerificationError as ex:
             err = str(ex)
 
     if err:
-        return render_template(
-            'login.html',
+        return render_login(
             err=err,
             phone_number=raw_phone_number,
             return_endpoint=return_params['endpoint'] or '',
@@ -119,13 +117,18 @@ def handle_login() -> Response:
             return_game_code=return_params['code'] or '',
         ), 400
 
-    session[SESSION_LOGIN] = {
+    pending = {
         'phone_number': phone_number,
         'verified': False,
         'started': time.time(),
         'sent': time.time(),
         'return': return_params,
     }
+
+    if not verification.is_enabled():
+        return finish_verification(pending)
+
+    session[SESSION_LOGIN] = pending
     return redirect(url_for('login_verify_page'), code=303)
 
 
@@ -136,6 +139,14 @@ def render_verify(pending: dict, err: Optional[str] = None, info: Optional[str] 
         info=info,
         masked_phone_number=phone_utils.mask(pending['phone_number']),
     ), status
+
+
+def render_login(**values) -> str:
+    return render_template(
+        'login.html',
+        sends_code=verification.is_enabled(),
+        **values,
+    )
 
 
 def handle_verify_page() -> Response:
@@ -165,6 +176,14 @@ def handle_verify() -> Response:
             status=400,
         )
 
+    return finish_verification(pending)
+
+
+def finish_verification(pending: dict) -> Response:
+    """
+    The phone number in `pending` is verified (or verification is off): log
+    in its user, or send a new number to sign up.
+    """
     player = player_repository.fetch_by_phone_number(pending['phone_number'])
     if player:
         return log_in(player, pending['return'])

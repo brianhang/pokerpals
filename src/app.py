@@ -237,6 +237,12 @@ if __name__ == '__main__':
     migrate_add_payout_type()
     migrate_add_users()
 
+    from utils import verification
+    if not verification.is_enabled():
+        print('Warning: phone verification is off, so anyone can log in with '
+              'any phone number. Set the TWILIO_* environment variables to '
+              'turn it on.', flush=True)
+
     import os
 
     debug = os.environ.get('APP_DEBUG') is not None

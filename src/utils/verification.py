@@ -8,7 +8,11 @@ attempts.
 
 When Twilio is not configured and the app runs with APP_DEBUG set, codes are
 generated locally and printed to the server log instead, so development does
-not need a Twilio account. Without either, sending a code fails.
+not need a Twilio account.
+
+With neither, verification is off: people log in by entering a phone number,
+without a code. This lets the app run before Twilio is set up; anyone can log
+in with any number, just as anyone could type any Venmo username before.
 """
 import logging
 import os
@@ -56,6 +60,13 @@ def twilio_config() -> tuple[str, str, str] | None:
 
 def is_dev_mode() -> bool:
     return twilio_config() is None and os.environ.get('APP_DEBUG') is not None
+
+
+def is_enabled() -> bool:
+    """
+    If logging in requires a texted code.
+    """
+    return twilio_config() is not None or is_dev_mode()
 
 
 def send_code(phone_number: str) -> None:

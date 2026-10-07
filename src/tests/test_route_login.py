@@ -170,13 +170,32 @@ class TestPhoneLogin(AppTestCase):
         self.client.set_cookie('venmo_username', 'alice')
         self.assertIn(b'name="phone-number"', self.client.get('/').data)
 
-    def test_twilio_required_outside_debug(self):
+    def test_no_code_without_twilio_or_debug(self):
         import os
         os.environ.pop('APP_DEBUG')
-        response = self.send_code(PHONE)
-        self.assertEqual(400, response.status_code)
-        self.assertIn(b'not set up', response.data)
 
+        page = self.client.get('/login')
+        self.assertIn(b'value="Log In"', page.data)
+        self.assertNotIn(b'text you a code', page.data)
+
+        # New number: straight to sign up, no code sent
+        response = self.send_code(PHONE)
+        self.assertTrue(response.location.endswith('/login/welcome'))
+        self.assertEqual({}, self.dev_codes)
+        self.client.post('/login/welcome', data={'action': 'create', 'display-name': 'Dana'})
+        self.assertIn(b'Welcome, Dana!', self.client.get('/').data)
+
+        # Known number: logged straight in
+        self.client.post('/logout')
+        response = self.send_code(PHONE)
+        self.assertTrue(response.location.endswith('/'))
+        self.assertIn(b'Welcome, Dana!', self.client.get('/').data)
+
+    def test_code_required_in_debug(self):
+        self.assertIn(b'value="Send Code"', self.client.get('/login').data)
+        response = self.send_code(PHONE)
+        self.assertTrue(response.location.endswith('/login/verify'))
+        self.assertEqual(302, self.client.get('/login/welcome').status_code)
 
 class TestClaimVenmoProfile(AppTestCase):
     def setUp(self):

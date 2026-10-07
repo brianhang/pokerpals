@@ -19,8 +19,12 @@
         <label for="phone-number">Log in with your phone number:</label>
         <input autofocus type="tel" inputmode="tel" autocomplete="tel" id="phone-number" name="phone-number"
             value="{{ phone_number or '' }}" placeholder="(415) 555-0123" required>
+        {% if sends_code %}
         <div class="secondary">We'll text you a code. Message and data rates may apply.</div>
         <input type="submit" value="Send Code">
+        {% else %}
+        <input type="submit" value="Log In">
+        {% endif %}
     </form>
 </div>
 {% endblock %}
