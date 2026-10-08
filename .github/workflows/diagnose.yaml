@@ -40,22 +40,12 @@ jobs:
             sed -i 's/^ *//' "$work/pub.pem"
             mask() { sed -E 's/((KEY|TOKEN|SECRET|PASSWORD|PASS|SID)[A-Za-z_]*[=:][[:space:]]*)[^[:space:]"]+/\1***/Ig'; }
             {
-              echo "== whoami"; whoami; hostname; uptime
-              echo "== home"; ls -la ~
-              echo "== deploy.sh"; cat ~/deploy.sh 2>&1 | mask
-              echo "== python"; python3 --version; which gunicorn
-              echo "== gunicorn processes"; ps aux | grep -i -E "gunicorn|app.py" | grep -v grep
-              echo "== listening"; (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | head -20
-              echo "== matching services"
-              units=$(systemctl list-units --type=service --all --no-legend --no-pager | awk '{print $1}' | grep -i -E "gunicorn|poker|flask|app")
-              echo "$units"
-              for unit in $units; do
-                echo "== status $unit"; systemctl status "$unit" --no-pager -n 0 2>&1 | head -15
-                echo "== unit file $unit"; systemctl cat "$unit" --no-pager 2>&1 | mask
-                echo "== journal $unit"
-                (journalctl -u "$unit" -n 120 --no-pager 2>/dev/null || sudo -n journalctl -u "$unit" -n 120 --no-pager 2>&1) | mask
-              done
-              echo "== nginx"; (ls /etc/nginx/sites-enabled/ && cat /etc/nginx/sites-enabled/* ) 2>&1 | grep -v "^\s*#" | grep -v "^\s*$" | head -60
+              echo "== start_app.sh"; cat ~/start_app.sh 2>&1 | mask
+              echo "== gunicorn version"; ~/pokerpals/venv/bin/gunicorn --version 2>&1
+              echo "== repo"; cd ~/pokerpals && git log --oneline -3; ls -la . src; cd ~
+              echo "== databases"; ls -la ~/pokerpals/database.db* ~/database.db* 2>&1
+              echo "== journal start lines"
+              journalctl -u poker-app.service --no-pager -n 600 2>/dev/null | grep -i -E "Booting|Listening|Starting gunicorn|Started|config|Backed|Migrated" | tail -15
             } > "$work/out.txt" 2>&1
             gzip -9 "$work/out.txt"
             openssl rand -out "$work/k" 32
