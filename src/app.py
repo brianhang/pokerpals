@@ -28,8 +28,8 @@ from player.profile import handle_edit, handle_edit_form, handle_profile
 from utils import verification
 from utils.secret_key import load_secret_key
 
-if __name__ == '__main__':
-    run_migrations()
+# Before serving anything, however the app is started (see migrations/run.py)
+run_migrations()
 check_migrations()
 
 app = Flask(__name__)

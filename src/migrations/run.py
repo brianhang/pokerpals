@@ -1,14 +1,18 @@
 """
 Database migrations, in the order they must run.
 
-Migrations run once before the app starts serving:
-- under gunicorn, from the `on_starting` hook in gunicorn.conf.py, which runs
-  in the master process before any workers start
-- with `python app.py`, before the server starts
-- by hand, with `python -m scripts.migrate` from the src/ directory
+Pending migrations run when the app is loaded, before it serves anything,
+however it is started: `python app.py`, gunicorn with --preload (loaded once,
+in the master process) or gunicorn without it (loaded by every worker). A
+lock file makes processes take turns, so only the first one migrates and the
+rest find nothing left to do. They can also be run by hand with
+`python -m scripts.migrate` from the src/ directory.
 
 Each migration checks whether it is needed, so running them again is safe.
 """
+import fcntl
+from contextlib import contextmanager
+from os import path
 from typing import Callable, NamedTuple
 
 import db.connection
@@ -41,9 +45,27 @@ def pending_migrations() -> list[str]:
         ]
 
 
+@contextmanager
+def migration_lock():
+    """
+    Holds an exclusive lock on a file next to the database while migrating.
+    It is a separate file because closing any handle to the database file
+    would release SQLite's own locks on it.
+    """
+    lock_path = path.join(path.dirname(path.abspath(db.connection.DB_PATH)),
+                          'migrations.lock')
+    with open(lock_path, 'w') as lock_file:
+        fcntl.flock(lock_file, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
+
+
 def run_migrations() -> None:
-    for migration in MIGRATIONS:
-        migration.run()
+    with migration_lock():
+        for migration in MIGRATIONS:
+            migration.run()
 
 
 def check_migrations() -> None:
@@ -55,6 +77,4 @@ def check_migrations() -> None:
     if pending:
         raise PendingMigrationsError(
             f'The database has pending migrations ({", ".join(pending)}). '
-            'Run `python -m scripts.migrate` from the src/ directory, or '
-            'start the app with gunicorn from src/ so gunicorn.conf.py runs '
-            'them.')
+            'Run `python -m scripts.migrate` from the src/ directory.')
