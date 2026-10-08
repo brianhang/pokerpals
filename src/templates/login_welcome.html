@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <h2>Welcome to PokerPal!</h2>
+    {% if err %}
+    <div class="error top-gap">
+        {{ err }}
+    </div>
+    {% endif %}
+    <div class="top-gap">
+        <h3>Played here before?</h3>
+        <p>PokerPal used to log you in with your Venmo username. Enter it to keep your game history and payments.</p>
+        <form class="form" action="/login/welcome" method="post">
+            <input type="hidden" name="action" value="claim">
+            <label for="claim-venmo-username">Venmo username:</label>
+            <input type="text" id="claim-venmo-username" name="venmo-username" autocapitalize="none"
+                autocorrect="off" value="{{ values.claim_venmo_username or '' }}" placeholder="@username" required>
+            <input type="submit" value="Claim My Profile">
+        </form>
+    </div>
+    <div class="top-gap">
+        <h3>New here?</h3>
+        <form class="form" action="/login/welcome" method="post">
+            <input type="hidden" name="action" value="create">
+            <label for="display-name">Your name:</label>
+            <input type="text" id="display-name" name="display-name" maxlength="40" autocomplete="name"
+                value="{{ values.display_name or '' }}" required>
+            <label for="create-venmo-username">Venmo username (optional, so people can pay you):</label>
+            <input type="text" id="create-venmo-username" name="venmo-username" autocapitalize="none"
+                autocorrect="off" value="{{ values.create_venmo_username or '' }}" placeholder="@username">
+            <input type="submit" value="Start Playing">
+        </form>
+    </div>
+</div>
+{% endblock %}

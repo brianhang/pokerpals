@@ -69,7 +69,7 @@ class TestSettleByBiggestWinner(unittest.TestCase):
         join_time = datetime.now()
         return [
             GamePlayer(
-                player_venmo_username=f'Player-{player_idx + 1}',
+                player_id=player_idx + 1,
                 join_time=join_time,
                 buyin_cents=buyin_cents,
                 cashout_cents=cashout_cents
@@ -84,11 +84,11 @@ class TestSettleByBiggestWinner(unittest.TestCase):
         transactions: list[Transaction],
     ) -> None:
         balances = {
-            player.player_venmo_username: player.buyin_cents
+            player.player_id: player.buyin_cents
             for player in game_players
         }
         biggest_winner = find_biggest_winner(game_players)
-        biggest_winner_id = biggest_winner.player_venmo_username \
+        biggest_winner_id = biggest_winner.player_id \
             if biggest_winner else None
 
         for transaction in transactions:
@@ -112,7 +112,7 @@ class TestSettleByBiggestWinner(unittest.TestCase):
 
         for player in game_players:
             self.assertEqual(player.cashout_cents,
-                             balances[player.player_venmo_username],
+                             balances[player.player_id],
                              f'Final balance does not match for {player}')
 
         original_sum = sum(player.buyin_cents for player in game_players)

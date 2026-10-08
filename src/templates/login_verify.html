@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    {% if err %}
+    <div class="error">
+        {{ err }}
+    </div>
+    {% endif %}
+    {% if info %}
+    <div class="info">
+        {{ info }}
+    </div>
+    {% endif %}
+    <form class="form" action="/login/verify" method="post">
+        <label for="code">Enter the code we texted to {{ masked_phone_number }}:</label>
+        <input autofocus type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" id="code"
+            name="code" required>
+        <input type="submit" value="Log In">
+    </form>
+    <form class="form-buttons top-gap" action="/login/resend" method="post">
+        <input class="cancel-btn" type="submit" value="Send a new code">
+        <a class="cancel-btn" href="/login">Use a different number</a>
+    </form>
+</div>
+{% endblock %}

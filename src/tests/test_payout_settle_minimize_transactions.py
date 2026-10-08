@@ -68,7 +68,7 @@ class TestSettleMinimizeTransactions(unittest.TestCase):
         join_time = datetime.now()
         return [
             GamePlayer(
-                player_venmo_username=f'Player-{player_idx + 1}',
+                player_id=player_idx + 1,
                 join_time=join_time,
                 buyin_cents=buyin_cents,
                 cashout_cents=cashout_cents
@@ -83,7 +83,7 @@ class TestSettleMinimizeTransactions(unittest.TestCase):
         transactions: list[Transaction],
     ) -> None:
         balances = {
-            player.player_venmo_username: player.buyin_cents
+            player.player_id: player.buyin_cents
             for player in game_players
         }
 
@@ -97,7 +97,7 @@ class TestSettleMinimizeTransactions(unittest.TestCase):
 
         for player in game_players:
             self.assertEqual(player.cashout_cents,
-                             balances[player.player_venmo_username],
+                             balances[player.player_id],
                              'Final balance does not match')
 
         original_sum = sum(player.buyin_cents for player in game_players)

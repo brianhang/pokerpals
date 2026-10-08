@@ -13,37 +13,49 @@ def fetch(game_id: int) -> GamePlayers:
     )
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT player_id, join_time, buyin_cents, cashout_cents FROM game_players WHERE game_id = ? ORDER BY join_time ASC', (game_id,))
+            'SELECT gp.player_id, gp.join_time, gp.buyin_cents, gp.cashout_cents, u.display_name, v.handle '
+            'FROM game_players gp '
+            'LEFT JOIN users u ON u.id = gp.player_id '
+            "LEFT JOIN user_payment_methods v ON v.user_id = gp.player_id AND v.method = 'venmo' "
+            'WHERE gp.game_id = ? ORDER BY gp.join_time ASC', (game_id,))
 
         for row in cursor:
             players.append(GamePlayer(
-                player_venmo_username=row[0],
+                player_id=row[0],
                 join_time=row[1],
                 buyin_cents=row[2],
-                cashout_cents=row[3]
+                cashout_cents=row[3],
+                display_name=row[4] or '',
+                venmo_username=row[5],
             ))
 
     return game_players
 
 
-def fetch_player(game_id: int, player_id: str) -> Optional[GamePlayer]:
+def fetch_player(game_id: int, player_id: int) -> Optional[GamePlayer]:
     with db.cursor.get() as cursor:
         cursor.execute(
-            'SELECT join_time, buyin_cents, cashout_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id))
+            'SELECT gp.join_time, gp.buyin_cents, gp.cashout_cents, u.display_name, v.handle '
+            'FROM game_players gp '
+            'LEFT JOIN users u ON u.id = gp.player_id '
+            "LEFT JOIN user_payment_methods v ON v.user_id = gp.player_id AND v.method = 'venmo' "
+            'WHERE gp.game_id = ? AND gp.player_id = ?', (game_id, player_id))
         row = cursor.fetchone()
 
         if not row:
             return None
 
         return GamePlayer(
-            player_venmo_username=player_id,
+            player_id=player_id,
             join_time=row[0],
             buyin_cents=row[1],
-            cashout_cents=row[2]
+            cashout_cents=row[2],
+            display_name=row[3] or '',
+            venmo_username=row[4],
         )
 
 
-def fetch_recent_game_ids(player_id: str, limit: Optional[int], reverse: bool = False) -> list[int]:
+def fetch_recent_game_ids(player_id: int, limit: Optional[int], reverse: bool = False) -> list[int]:
     recent_game_ids = []
 
     with db.cursor.get() as cursor:
@@ -63,27 +75,27 @@ def fetch_recent_game_ids(player_id: str, limit: Optional[int], reverse: bool = 
     return recent_game_ids
 
 
-def add_player(game_id: int, player_id: str) -> None:
+def add_player(game_id: int, player_id: int) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
-            'UPDATE players SET active_game_id = ? WHERE venmo_username = ?', (game_id, player_id,))
+            'UPDATE users SET active_game_id = ? WHERE id = ?', (game_id, player_id,))
         cursor.execute(
             'INSERT OR IGNORE INTO game_players (game_id, player_id, buyin_cents) VALUES (?, ?, 0)', (game_id, player_id,))
 
 
-def remove_player(game_id: int, player_id: str) -> None:
+def remove_player(game_id: int, player_id: int) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
-            'UPDATE players SET active_game_id = NULL WHERE active_game_id = ? AND venmo_username = ?', (game_id, player_id,))
+            'UPDATE users SET active_game_id = NULL WHERE active_game_id = ? AND id = ?', (game_id, player_id,))
 
 
 def remove_all_players(game_id):
     with db.cursor.get() as cursor:
         cursor.execute(
-            'UPDATE players SET active_game_id = NULL WHERE active_game_id = ?', (game_id,))
+            'UPDATE users SET active_game_id = NULL WHERE active_game_id = ?', (game_id,))
 
 
-def buy_in(game_id: str, player_id: str, cents: int, override: bool = False) -> None:
+def buy_in(game_id: int, player_id: int, cents: int, override: bool = False) -> None:
     with db.cursor.get() as cursor:
         if override:
             new_buyin_cents = cents
@@ -103,7 +115,7 @@ def buy_in(game_id: str, player_id: str, cents: int, override: bool = False) -> 
                        (new_buyin_cents, game_id, player_id,))
 
 
-def cash_out(game_id: str, player_id: str, cents: int) -> None:
+def cash_out(game_id: int, player_id: int, cents: int) -> None:
     with db.cursor.get() as cursor:
         cursor.execute(
             'SELECT cashout_cents FROM game_players WHERE game_id = ? AND player_id = ?', (game_id, player_id,))

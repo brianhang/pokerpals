@@ -6,10 +6,12 @@ from utils import cents as cent_utils
 
 @dataclass
 class GamePlayer:
-    player_venmo_username: str
+    player_id: int
     join_time: datetime
     buyin_cents: int
     cashout_cents: Optional[int]
+    display_name: str = ''
+    venmo_username: Optional[str] = None
 
     def buyin_text(self) -> str:
         return cent_utils.to_string(self.buyin_cents)

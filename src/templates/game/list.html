@@ -6,7 +6,7 @@
 {% block body %}
 <div class="container">
     <div class="game-list-intro">
-        <span>Welcome, {{ player.venmo_username }}!</span>
+        <span>Welcome, {{ player.display_name }}!</span>
         <form method="post" action="/logout">
             <input type="submit" name="logout" value="Logout">
         </form>

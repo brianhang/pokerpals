@@ -30,8 +30,8 @@ def get_transactions(game_players: list[GamePlayer]) -> list[Transaction]:
             continue
 
         transactions.append(Transaction(
-            sender_id=sender.player_venmo_username,
-            receiver_id=receiver.player_venmo_username,
+            sender_id=sender.player_id,
+            receiver_id=receiver.player_id,
             cents=abs(earnings),
         ))
 
