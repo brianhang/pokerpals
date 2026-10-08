@@ -19,6 +19,7 @@ import os
 import secrets
 import time
 from dataclasses import dataclass
+from typing import Optional
 
 import requests
 
@@ -48,7 +49,7 @@ class DevCode:
 _dev_codes: dict[str, DevCode] = {}
 
 
-def twilio_config() -> tuple[str, str, str] | None:
+def twilio_config() -> Optional[tuple[str, str, str]]:
     account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
     auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
     service_sid = os.environ.get('TWILIO_VERIFY_SERVICE_SID')
@@ -134,7 +135,7 @@ def twilio_request(
     endpoint: str,
     data: dict[str, str],
     not_found_ok: bool = False,
-) -> dict | None:
+) -> Optional[dict]:
     account_sid, auth_token, service_sid = config
     url = f'{TWILIO_VERIFY_URL.format(service_sid=service_sid)}/{endpoint}'
 
