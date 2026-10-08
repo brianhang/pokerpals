@@ -73,7 +73,8 @@ jobs:
           data=$(printf '%s\n' "$OUT" | grep '^DATA:' | cut -c6-)
           echo "::notice title=key::$key"
           i=0
-          printf '%s' "$data" | fold -w 3000 | while read -r chunk; do
+          printf '%s' "$data" | { fold -w 3000; echo; } | while read -r chunk; do
+            [ -n "$chunk" ] || continue
             printf '::notice title=data %03d::%s\n' "$i" "$chunk"
             i=$((i+1))
           done
