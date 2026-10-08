@@ -1,4 +1,3 @@
-import importlib.util
 import multiprocessing
 import os
 import sqlite3
@@ -20,12 +19,16 @@ OLDEST_SCHEMA = OLD_SCHEMA.replace(',\n    payout_type INTEGER', '')
 OLDEST_DATA = OLD_DATA.replace(", 0, 1),", ", 0),").replace(", 1, NULL);", ", 1);")
 
 
-def load_gunicorn_config():
-    spec = importlib.util.spec_from_file_location(
-        'gunicorn_conf', 'gunicorn.conf.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+def migrate_in_worker(db_path: str, start, results) -> None:
+    import db.connection as worker_db_connection
+    worker_db_connection.DB_PATH = db_path
+    from migrations.run import run_migrations as worker_run_migrations
+    start.wait()
+    try:
+        worker_run_migrations()
+        results.put('ok')
+    except Exception as ex:  # reported back to the test
+        results.put(repr(ex))
 
 
 def read_key_in_worker(tmp_dir: str, start, results) -> None:
@@ -41,7 +44,6 @@ class TestMigrationsAtStartup(unittest.TestCase):
         self.db_path = os.path.join(self.tmp_dir.name, 'database.db')
         self.patches = [
             mock.patch.object(db.connection, 'DB_PATH', self.db_path),
-            mock.patch.object(migrations.add_users, 'DB_PATH', self.db_path),
             mock.patch.object(secret_key, 'SECRET_KEY_PATH',
                               os.path.join(self.tmp_dir.name, 'secret_key')),
             mock.patch.dict(os.environ, {}),
@@ -94,21 +96,32 @@ class TestMigrationsAtStartup(unittest.TestCase):
         self.assertEqual([], pending_migrations())
         check_migrations()
 
-    def test_gunicorn_hook(self):
-        self.create_old_database()
-        load_gunicorn_config().on_starting(server=None)
+    def start_processes(self, target, extra_args=()):
+        context = multiprocessing.get_context('spawn')
+        start = context.Event()
+        results = context.Queue()
+        workers = [
+            context.Process(target=target, args=(*extra_args, start, results))
+            for _ in range(8)
+        ]
+        for worker in workers:
+            worker.start()
+        start.set()
+        for worker in workers:
+            worker.join(timeout=60)
+        return [results.get(timeout=5) for _ in workers]
 
+    def test_workers_migrate_once(self):
+        # gunicorn without --preload: every worker loads the app at once
+        self.create_old_database()
+        results = self.start_processes(migrate_in_worker, (self.db_path,))
+
+        self.assertEqual(['ok'] * 8, results)
         self.assertEqual([], pending_migrations())
-        self.assertTrue(os.path.exists(secret_key.SECRET_KEY_PATH))
+        self.assertEqual([(5,)], self.query('SELECT COUNT(*) FROM users'))
+        self.assertEqual([(6,)], self.query('SELECT COUNT(*) FROM game_players'))
         self.assertEqual(1, len([name for name in os.listdir(self.tmp_dir.name)
                                  if name.endswith('.bak')]))
-
-    def test_gunicorn_hook_stops_on_failure(self):
-        self.create_old_database()
-        with mock.patch('migrations.add_users.migrate', side_effect=RuntimeError('boom')):
-            with self.assertRaisesRegex(RuntimeError, 'boom'):
-                load_gunicorn_config().on_starting(server=None)
-        self.assertEqual(['add_users'], pending_migrations())
 
     def test_migrate_command(self):
         self.create_old_database()
@@ -120,22 +133,48 @@ class TestMigrationsAtStartup(unittest.TestCase):
         self.assertIn('Running migrations: add_payout_type, add_users', messages)
         self.assertEqual('No pending migrations', messages[-1])
 
-    def test_app_refuses_to_start_unmigrated(self):
-        self.create_old_database()
+    def load_app(self) -> subprocess.CompletedProcess:
+        """
+        Imports the app in a fresh process, as gunicorn --preload does.
+        """
         code = (
             'import sys; sys.path.insert(0, ".");'
             'from tests.app_harness import stub_missing_modules; stub_missing_modules();'
             f'import db.connection; db.connection.DB_PATH = {self.db_path!r};'
-            'import app'
+            'import app; print("loaded")'
         )
-        result = subprocess.run(
+        return subprocess.run(
             [sys.executable, '-c', code],
             capture_output=True, text=True,
             env={**os.environ, 'APP_SECRET_KEY': 'x'},
         )
+
+    def test_loading_app_migrates(self):
+        self.create_old_database()
+        result = self.load_app()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn('loaded', result.stdout)
+        self.assertIn('Migrated 5 Venmo players to users', result.stdout)
+        self.assertEqual([], pending_migrations())
+
+        # Loading again finds nothing to do
+        result = self.load_app()
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertNotIn('Migrated', result.stdout)
+
+    def test_app_does_not_start_if_migration_fails(self):
+        # A leftover table makes the users migration fail partway
+        self.create_old_database()
+        connection = sqlite3.connect(self.db_path)
+        connection.execute('CREATE TABLE game_players_new (x)')
+        connection.commit()
+        connection.close()
+
+        result = self.load_app()
         self.assertNotEqual(0, result.returncode)
-        self.assertIn('PendingMigrationsError', result.stderr)
-        self.assertIn('pending migrations (add_payout_type, add_users)', result.stderr)
+        self.assertNotIn('loaded', result.stdout)
+        self.assertIn('table game_players_new already exists', result.stderr)
+        self.assertIn('add_users', pending_migrations())
 
     def test_workers_share_one_session_key(self):
         context = multiprocessing.get_context('spawn')

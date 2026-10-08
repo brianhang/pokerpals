@@ -34,16 +34,11 @@ warning on start. Set the variables at any time to turn verification on.
 
 ## Database Migrations
 
-Migrations run automatically before the app starts serving:
-
-- With gunicorn started from `src/`, the `on_starting` hook in
-  `src/gunicorn.conf.py` runs them once, before any workers start. If one
-  fails, gunicorn exits instead of starting.
-- With `python app.py` (as `./dev.sh` does), they run before the server starts.
-- By hand: `python -m scripts.migrate` from `src/`.
-
-If the app is started on a database with pending migrations, it refuses to
-start and logs which migrations are pending.
+Pending migrations run automatically when the app loads, before it serves
+anything, whether it's started with `python app.py` or gunicorn (with or
+without `--preload`). A lock file makes sure only one process migrates. If a
+migration fails, the app doesn't start, and the error says why. They can also
+be run by hand with `python -m scripts.migrate` from `src/`.
 
 ### Migrating from Venmo logins
 

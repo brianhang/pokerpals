@@ -20,7 +20,6 @@ import sqlite3
 from os import path
 
 import db.connection
-from db.constants import DB_PATH
 
 LEGACY_PLAYERS_TABLE = 'legacy_players'
 
@@ -186,10 +185,11 @@ def migrate_add_users() -> None:
         if not needs_migration(connection):
             return
 
-    if path.exists(DB_PATH):
+    db_path = db.connection.DB_PATH
+    if path.exists(db_path):
         stamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        backup_path = f'{DB_PATH}.pre-users-{stamp}.bak'
-        shutil.copyfile(DB_PATH, backup_path)
+        backup_path = f'{db_path}.pre-users-{stamp}.bak'
+        shutil.copyfile(db_path, backup_path)
         print(f'Backed up database to {backup_path}')
 
     with db.connection.open_connection() as connection:
