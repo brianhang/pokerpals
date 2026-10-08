@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Collect encrypted diagnostics
         id: ssh
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USERNAME }}
