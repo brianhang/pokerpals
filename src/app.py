@@ -3,8 +3,7 @@ import datetime
 import gevent.monkey
 
 from game.qr_code import handle_game_join_qr_code
-from migrations.add_payout_type import migrate_add_payout_type
-from migrations.add_users import migrate_add_users
+from migrations.run import check_migrations, run_migrations
 from payment.route import handle_payment_dismiss, handle_view_payment  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
@@ -26,7 +25,12 @@ from player.route import (fetch_player, handle_login, handle_login_page,
                           handle_verify_page, handle_welcome,
                           handle_welcome_page)
 from player.profile import handle_edit, handle_edit_form, handle_profile
+from utils import verification
 from utils.secret_key import load_secret_key
+
+if __name__ == '__main__':
+    run_migrations()
+check_migrations()
 
 app = Flask(__name__)
 app.secret_key = load_secret_key()
@@ -268,16 +272,13 @@ def payment_dismiss(payment_id):
     return handle_login_page()
 
 
+if not verification.is_enabled():
+    print('Warning: phone verification is off, so anyone can log in with '
+          'any phone number. Set the TWILIO_* environment variables to '
+          'turn it on.', flush=True)
+
+
 if __name__ == '__main__':
-    migrate_add_payout_type()
-    migrate_add_users()
-
-    from utils import verification
-    if not verification.is_enabled():
-        print('Warning: phone verification is off, so anyone can log in with '
-              'any phone number. Set the TWILIO_* environment variables to '
-              'turn it on.', flush=True)
-
     import os
 
     debug = os.environ.get('APP_DEBUG') is not None

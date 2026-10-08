@@ -32,6 +32,19 @@ Without the Twilio variables (and without `APP_DEBUG`), phone verification is
 off: people log in by entering a phone number, with no code, and the app logs a
 warning on start. Set the variables at any time to turn verification on.
 
+## Database Migrations
+
+Migrations run automatically before the app starts serving:
+
+- With gunicorn started from `src/`, the `on_starting` hook in
+  `src/gunicorn.conf.py` runs them once, before any workers start. If one
+  fails, gunicorn exits instead of starting.
+- With `python app.py` (as `./dev.sh` does), they run before the server starts.
+- By hand: `python -m scripts.migrate` from `src/`.
+
+If the app is started on a database with pending migrations, it refuses to
+start and logs which migrations are pending.
+
 ### Migrating from Venmo logins
 
 PokerPal used to log people in with just their Venmo username. On start, the
