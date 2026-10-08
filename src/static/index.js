@@ -17,3 +17,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-copy]');
+  if (button == null) {
+    return;
+  }
+
+  const label = button.textContent;
+  const done = (text) => {
+    button.textContent = text;
+    setTimeout(() => { button.textContent = label; }, 1500);
+  };
+
+  if (navigator.clipboard == null) {
+    window.prompt('Copy this:', button.dataset.copy);
+    return;
+  }
+
+  navigator.clipboard.writeText(button.dataset.copy)
+    .then(() => done('Copied!'))
+    .catch(() => window.prompt('Copy this:', button.dataset.copy));
+});

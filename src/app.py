@@ -5,7 +5,7 @@ import gevent.monkey
 from game.qr_code import handle_game_join_qr_code
 from migrations.add_payout_type import migrate_add_payout_type
 from migrations.add_users import migrate_add_users
-from payment.route import handle_payment_dismiss  # nopep8
+from payment.route import handle_payment_dismiss, handle_view_payment  # nopep8
 
 gevent.monkey.patch_all()  # nopep8
 
@@ -25,6 +25,7 @@ from player.route import (fetch_player, handle_login, handle_login_page,
                           handle_logout, handle_resend, handle_verify,
                           handle_verify_page, handle_welcome,
                           handle_welcome_page)
+from player.profile import handle_edit, handle_edit_form, handle_profile
 from utils.secret_key import load_secret_key
 
 app = Flask(__name__)
@@ -222,6 +223,40 @@ def login_welcome():
 @app.post('/logout')
 def logout():
     return handle_logout()
+
+
+@app.route('/payment/<payment_id>', strict_slashes=False)
+def payment_view(payment_id):
+    with fetch_player() as player:
+        if player:
+            payment_id = int(payment_id) if payment_id.isdigit() else 0
+            return handle_view_payment(player, payment_id)
+    return handle_login_page()
+
+
+@app.route('/u/<user_id>', strict_slashes=False)
+def profile(user_id):
+    with fetch_player() as player:
+        if player:
+            user_id = int(user_id) if user_id.isdigit() else 0
+            return handle_profile(player, user_id)
+    return handle_login_page()
+
+
+@app.route('/account', strict_slashes=False)
+def account():
+    with fetch_player() as player:
+        if player:
+            return handle_edit_form(player)
+    return handle_login_page()
+
+
+@app.post('/account', strict_slashes=False)
+def account_save():
+    with fetch_player() as player:
+        if player:
+            return handle_edit(player)
+    return redirect(url_for('home'))
 
 
 @app.post('/payment/dismiss/<payment_id>', strict_slashes=False)

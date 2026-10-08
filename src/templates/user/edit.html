@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <div class="game-list-intro">
+        <a href="/">Back</a>
+        <a href="/u/{{ player.id }}">View profile</a>
+    </div>
+    <h2>Your Profile</h2>
+    {% if err %}
+    <div class="error top-gap">{{ err }}</div>
+    {% elif saved %}
+    <div class="info">Saved!</div>
+    {% endif %}
+    <form class="form top-gap" action="/account" method="post">
+        <label for="display-name">Name:</label>
+        <input type="text" id="display-name" name="display-name" maxlength="40" autocomplete="name"
+            value="{{ values.display_name }}" required>
+
+        <label for="venmo-username">Venmo username:</label>
+        <input type="text" id="venmo-username" name="venmo-username" autocapitalize="none" autocorrect="off"
+            value="{{ values.venmo_username }}" placeholder="@username">
+
+        <label for="zelle-handle">Zelle phone number or email:</label>
+        <input type="text" id="zelle-handle" name="zelle-handle" autocapitalize="none" autocorrect="off"
+            inputmode="email" value="{{ values.zelle_handle }}" placeholder="(415) 555-0123 or you@example.com">
+        <div class="secondary">Only shown to people you've played with.</div>
+
+        <div class="form-buttons">
+            <input type="submit" value="Save">
+            <a class="cancel-btn" href="/">Cancel</a>
+        </div>
+    </form>
+    <form class="top-gap" method="post" action="/logout">
+        <input class="cancel-btn" type="submit" value="Log Out">
+    </form>
+</div>
+{% endblock %}

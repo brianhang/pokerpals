@@ -6,11 +6,7 @@
 {% macro player_item(game, viewing_player, player) %}
 <div class="player-item">
     <h3>
-        {% if player.venmo_username %}
-        <a href="https://www.venmo.com/{{ player.venmo_username }}/">{{ player.display_name }}</a>
-        {% else %}
-        {{ player.display_name }}
-        {% endif %}
+        <a href="/u/{{ player.player_id }}">{{ player.display_name }}</a>
     </h3>
     <div class="player-info">
         <ul>
@@ -58,7 +54,7 @@
     </div>
     <div>
         {{ game_title(game) }}
-        <div class="secondary"><em>Created by {{ game.creator_name }} on {{ game.human_created_time() }}</em></div>
+        <div class="secondary"><em>Created by <a href="/u/{{ game.creator_id }}">{{ game.creator_name }}</a> on {{ game.human_created_time() }}</em></div>
         <div class="game-qr-code top-gap">
             {% if game_player %}
             <a href="/game/join/{{ game.id }}/?code={{ game.entry_code }}">
@@ -127,9 +123,9 @@
         <ul>
             {% for payment in payments %}
             <li>
-                {{ payment.from_name }}
+                <a href="/u/{{ payment.from_player_id }}">{{ payment.from_name }}</a>
                 sends {{ payment.amount_text() }} to
-                {{ payment.to_name }}
+                <a href="/u/{{ payment.to_player_id }}">{{ payment.to_name }}</a>
             </li>
             {% endfor %}
         </ul>

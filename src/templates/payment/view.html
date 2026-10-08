@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <div class="game-list-intro">
+        <a href="/">Back</a>
+        <a href="/g/{{ payment.game_id }}/">Game #{{ payment.game_id }}</a>
+    </div>
+    <h2>
+        {% if is_send %}
+        Pay {{ payment.amount_text() }} to <a href="/u/{{ payment.to_player_id }}">{{ payment.to_name }}</a>
+        {% else %}
+        Collect {{ payment.amount_text() }} from <a href="/u/{{ payment.from_player_id }}">{{ payment.from_name }}</a>
+        {% endif %}
+    </h2>
+
+    {% if payment.completed %}
+    <div class="info">This payment is marked as done.</div>
+    {% endif %}
+
+    {% if venmo_url %}
+    <div class="pay-option">
+        <h3>Venmo</h3>
+        <div class="secondary">@{{ other.venmo_username }}</div>
+        <a class="venmo-cta-link pay-option-button" href="{{ venmo_url }}">
+            {{ 'Pay' if is_send else 'Request' }} {{ payment.amount_text() }} on Venmo
+        </a>
+    </div>
+    {% endif %}
+
+    {% if is_send and other and other.zelle_handle %}
+    <div class="pay-option">
+        <h3>Zelle</h3>
+        <p>Open your bank's app, choose Zelle, and send to:</p>
+        <div class="copy-row">
+            <code>{{ zelle_display(other.zelle_handle) }}</code>
+            <button type="button" class="copy-btn" data-copy="{{ zelle_display(other.zelle_handle) }}">Copy</button>
+        </div>
+        <div class="copy-row">
+            <code>${{ amount }}</code>
+            <button type="button" class="copy-btn" data-copy="{{ amount }}">Copy</button>
+        </div>
+        <p class="secondary">Check the name your bank shows matches {{ other.display_name }} before sending.</p>
+    </div>
+    {% endif %}
+
+    {% if not is_send and player.zelle_handle %}
+    <div class="pay-option">
+        <h3>Zelle</h3>
+        <p>{{ other.display_name if other else 'They' }} can send it to your Zelle at
+            <code>{{ zelle_display(player.zelle_handle) }}</code>.</p>
+    </div>
+    {% endif %}
+
+    {% if is_send and not venmo_url and not (other and other.zelle_handle) %}
+    <div class="warn">
+        {{ payment.to_name }} hasn't added Venmo or Zelle yet. Ask them how they'd like to be paid.
+    </div>
+    {% elif not is_send and not venmo_url and not player.zelle_handle %}
+    <div class="warn">
+        {{ payment.from_name }} hasn't added Venmo, and you haven't added Zelle.
+        <a href="/account">Add a way to get paid</a>.
+    </div>
+    {% elif not player.has_payment_method() %}
+    <p class="secondary"><a href="/account">Add Venmo or Zelle</a> so people can pay you too.</p>
+    {% endif %}
+
+    {% if not payment.completed %}
+    <form class="form top-gap" action="/payment/dismiss/{{ payment.id }}" method="post">
+        <input type="hidden" name="return-payment" value="1">
+        <input class="cancel-btn" type="submit" value="Mark as Done">
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

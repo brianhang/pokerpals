@@ -1,3 +1,5 @@
+import urllib.parse
+
 import utils.cents as cent_utils
 
 from enum import Enum
@@ -22,7 +24,10 @@ def get_payment_url(
     else:
         base_url = f'https://venmo.com/'
 
-    return f'{base_url}?recipients={venmo_username}' \
-        f'&txn={txn.value}' \
-        f'&note={note}' \
-        f'&amount={amount}'
+    query = urllib.parse.urlencode({
+        'recipients': venmo_username,
+        'txn': txn.value,
+        'note': note,
+        'amount': amount,
+    }, quote_via=urllib.parse.quote)
+    return f'{base_url}?{query}'

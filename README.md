@@ -43,3 +43,14 @@ Venmo username attached, and backs up the database first to
 After logging in with a phone number for the first time, people can claim their
 old Venmo profile to keep their game history and payments. Each Venmo profile
 can only be claimed by one phone number.
+
+## Profiles and Payments
+
+Each person has a profile (`/u/<id>`) with the ways they can be paid, and can
+edit their name, Venmo username and Zelle phone number or email at `/account`.
+Zelle details are only shown to people who have played in a game with them.
+
+Each payment has a page (`/payment/<id>`) with every way to settle it: a Venmo
+link that opens the app with the amount filled in, and, since Zelle has no
+equivalent link, the recipient's Zelle phone number or email and the amount
+with copy buttons, to paste into a bank app.
