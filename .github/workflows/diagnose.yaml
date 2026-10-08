@@ -1,0 +1,79 @@
+name: Diagnose server (temporary)
+
+# Read-only diagnostics. The server encrypts its output with a public key
+# before printing it, so only ciphertext appears in this run.
+
+on:
+  push:
+    branches:
+      - diagnose-server
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect encrypted diagnostics
+        id: ssh
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          capture_stdout: true
+          script: |
+            set +e
+            umask 077
+            work=$(mktemp -d)
+            cat > "$work/pub.pem" <<'KEY'
+            -----BEGIN PUBLIC KEY-----
+            MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAsLrT9gMIJ22yycvS8vkJ
+            kMVyLVQySY20ULVClY9T/H6SjGPv89tv+FZaY3deztr+Oty7ZsfUqik7zgKxz4oj
+            xT+P1UcejZ9T3zXCwMvmwkSljzDyP6fBGxqBZOaPPcMFFrbjuJNJV3jCRDJ1Tm+q
+            9psvVKmEG/X/GBOPvBFdYBC1uRTsP88RnMmjIsdSoksnimt9UxefjF+sgfiQ8b82
+            xXjWvypecwNHdKzpFkulpJ74UsDP53Vl++tGBcc05eKaMsGc4O9ty0T6bQNwx55U
+            hdmay2zMPvPVze/M9rU6oyRj8hM0MCb7m52K8Zcm+TcA3zIFhkbFyrMymqfgs30C
+            dzDh93Fxy1CWFTKwwZKN6y3wPcZncTah+MMS/isGXHZ2rsByAl2UOn4Y+AP1bZcl
+            29DMEo5rbyJJyq7NB0PwnZ+TnRTLPt7hZL+mcmfHZF+29uY+ChquQL1iywikrU7k
+            XBzUVx4QS9NZ9foNQYYR93Hm+6tWEU3Fu6JoS7eFtoOxAgMBAAE=
+            -----END PUBLIC KEY-----
+            KEY
+            sed -i 's/^ *//' "$work/pub.pem"
+            mask() { sed -E 's/((KEY|TOKEN|SECRET|PASSWORD|PASS|SID)[A-Za-z_]*[=:][[:space:]]*)[^[:space:]"]+/\1***/Ig'; }
+            {
+              echo "== whoami"; whoami; hostname; uptime
+              echo "== home"; ls -la ~
+              echo "== deploy.sh"; cat ~/deploy.sh 2>&1 | mask
+              echo "== python"; python3 --version; which gunicorn
+              echo "== gunicorn processes"; ps aux | grep -i -E "gunicorn|app.py" | grep -v grep
+              echo "== listening"; (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | head -20
+              echo "== matching services"
+              units=$(systemctl list-units --type=service --all --no-legend --no-pager | awk '{print $1}' | grep -i -E "gunicorn|poker|flask|app")
+              echo "$units"
+              for unit in $units; do
+                echo "== status $unit"; systemctl status "$unit" --no-pager -n 0 2>&1 | head -15
+                echo "== unit file $unit"; systemctl cat "$unit" --no-pager 2>&1 | mask
+                echo "== journal $unit"
+                (journalctl -u "$unit" -n 120 --no-pager 2>/dev/null || sudo -n journalctl -u "$unit" -n 120 --no-pager 2>&1) | mask
+              done
+              echo "== nginx"; (ls /etc/nginx/sites-enabled/ && cat /etc/nginx/sites-enabled/* ) 2>&1 | grep -v "^\s*#" | grep -v "^\s*$" | head -60
+            } > "$work/out.txt" 2>&1
+            gzip -9 "$work/out.txt"
+            openssl rand -out "$work/k" 32
+            openssl enc -aes-256-cbc -pbkdf2 -salt -in "$work/out.txt.gz" -out "$work/out.enc" -pass file:"$work/k"
+            openssl pkeyutl -encrypt -pubin -inkey "$work/pub.pem" -in "$work/k" -out "$work/k.enc"
+            echo "KEY:$(base64 -w0 "$work/k.enc")"
+            echo "DATA:$(base64 -w0 "$work/out.enc")"
+            rm -rf "$work"
+
+      - name: Publish ciphertext as annotations
+        env:
+          OUT: ${{ steps.ssh.outputs.stdout }}
+        run: |
+          key=$(printf '%s\n' "$OUT" | grep '^KEY:' | cut -c5-)
+          data=$(printf '%s\n' "$OUT" | grep '^DATA:' | cut -c6-)
+          echo "::notice title=key::$key"
+          i=0
+          printf '%s' "$data" | fold -w 3000 | while read -r chunk; do
+            printf '::notice title=data %03d::%s\n' "$i" "$chunk"
+            i=$((i+1))
+          done
